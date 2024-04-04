@@ -1,3 +1,7 @@
 *.txt
 lab2.1/bin
 lab2.1/pkg
+lab1.2/bin
+lab1.2/.vs
+lab1.2/obj
+.vs/
