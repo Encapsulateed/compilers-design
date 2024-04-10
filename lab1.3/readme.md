@@ -4,7 +4,8 @@
 % Алексей Митрошкин, ИУ9-31Б
 
 # Цель работы
-Целью данной работы является приобретение навыка реализации лексического анализатора на объектно-ориентированном языке без применения каких-либо средств автоматизации решения задачи лексического анализа.
+Целью данной работы является приобретение навыка реализации лексического анализатора
+на объектно-ориентированном языке без применения каких-либо средств автоматизации решения задачи лексического анализа.
 
 # Индивидуальный вариант
 - Идентификаторы: последовательности буквенных символов Unicode и цифр,
@@ -37,7 +38,8 @@ internal class Position : IComparable<Position>
         {
             get
             {
-                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned : char.GetUnicodeCategory(Text, Index);
+                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned
+                 : char.GetUnicodeCategory(Text, Index);
             }
             private set { }
         }
@@ -203,7 +205,8 @@ internal class Position : IComparable<Position>
                         }
                         if (word.ToLower() == "print")
                         {
-                            return new KeyWordToken(DomainTag.PRINT_KEYWORD, word, prev_cur, cur.clone());
+                            return new KeyWordToken(DomainTag.PRINT_KEYWORD, word, prev_cur,
+                             cur.clone());
                         }
                         else
                         {
@@ -219,12 +222,14 @@ internal class Position : IComparable<Position>
                         }
                         if (word.ToLower() == "goto")
                         {
-                            return new KeyWordToken(DomainTag.GOTO_KEYWORD, word, prev_cur, cur.clone());
+                            return new KeyWordToken(DomainTag.GOTO_KEYWORD, word, prev_cur,
+                             cur.clone());
 
                         }
                         else if (word.ToLower() == "gosub")
                         {
-                            return new KeyWordToken(DomainTag.GOSUB_KEYWORD, word, prev_cur, cur.clone());
+                            return new KeyWordToken(DomainTag.GOSUB_KEYWORD, word, prev_cur,
+                             cur.clone());
 
                         }
                         else
@@ -245,7 +250,8 @@ internal class Position : IComparable<Position>
 
                         } while (cur.IsLetterOrDigit);
              
-                        return new NumberToken(Convert.ToInt64(word.ToUpper(),16), prev_cur, cur.clone());
+                        return new NumberToken(Convert.ToInt64(word.ToUpper(),16),
+                         prev_cur, cur.clone());
                     default:
                         if (cur.IsLetter)
                         {
@@ -360,7 +366,8 @@ cp.OutPutMessages();
     {
         public readonly int Code;
         public string Name;
-        public IdentToken(int code, Position statring, Position following) : base(DomainTag.IDENT, statring, following)
+        public IdentToken(int code, Position statring, Position following)
+         : base(DomainTag.IDENT, statring, following)
         {
             Code = code;
         }
@@ -378,9 +385,11 @@ cp.OutPutMessages();
     {
         public readonly string keyword;
 
-        public KeyWordToken(DomainTag tag, string value, Position starting, Position following) : base(tag, starting, following)
+        public KeyWordToken(DomainTag tag, string value, Position starting, Position following)
+         : base(tag, starting, following)
         {
-            Debug.Assert(tag == DomainTag.GOSUB_KEYWORD || tag == DomainTag.GOTO_KEYWORD || tag == DomainTag.PRINT_KEYWORD);
+            Debug.Assert(tag == DomainTag.GOSUB_KEYWORD || tag == DomainTag.GOTO_KEYWORD
+             || tag == DomainTag.PRINT_KEYWORD);
             keyword = value;
         }
 
@@ -396,7 +405,8 @@ cp.OutPutMessages();
     {
         public readonly long Value;
 
-        public NumberToken(long value, Position starting, Position following) : base(DomainTag.NUMBER, starting, following)
+        public NumberToken(long value, Position starting, Position following)
+         : base(DomainTag.NUMBER, starting, following)
         {
             Value = value;
         }
