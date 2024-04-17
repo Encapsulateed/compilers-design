@@ -52,8 +52,6 @@ namespace lab1._3.src
                     }
                 }
 
-                Console.WriteLine(prev_state);
-                Console.WriteLine(curr_state);
 
                 if (curr_state != -1)
                 {
@@ -84,7 +82,6 @@ namespace lab1._3.src
         Token Select(int state, string word, Position s, Position e)
         {
             var t = (DomainTag)state;
-            Console.WriteLine(t);
             if (t == DomainTag.IDENT || t == DomainTag.S_IDENT || t == DomainTag.S2_IDENT || t == DomainTag.U_IDENT
                 || t == DomainTag.N_IDENT || t == DomainTag.E_IDENT || t == DomainTag.E2_IDENT || t == DomainTag.S2_IDENT)
             {
