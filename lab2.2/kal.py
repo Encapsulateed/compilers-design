@@ -120,17 +120,18 @@ NTerm, NMulOp, NFactor, NPower, NConst = \
     map(pe.NonTerminal, 'Term MulOp Factor Power Const'.split())
 
 
-NProgram |= KW_VAR, NVarDefs, KW_BEGIN, NStatements, KW_END, Program
+NProgram |= KW_VAR, NVarDefs, Program
 
 NVarDefs |= lambda: []
 NVarDefs |= NVarDefs, NVarDef, lambda vds, vd: vds + [vd]
 
 NVarDef |= VARNAME, ':', NType, ';', VarDef
 
+
 NType |= KW_INTEGER, lambda: Type.Integer
 NType |= KW_REAL, lambda: Type.Real
 NType |= KW_BOOLEAN, lambda: Type.Boolean
-
+'''
 NStatements |= NStatement, lambda st: [st]
 NStatements |= NStatements, ';', NStatement, lambda sts, st: sts + [st]
 
@@ -184,6 +185,7 @@ NConst |= INTEGER, lambda v: ConstExpr(v, Type.Integer)
 NConst |= REAL, lambda v: ConstExpr(v, Type.Real)
 NConst |= KW_TRUE, lambda: ConstExpr(True, Type.Boolean)
 NConst |= KW_FALSE, lambda: ConstExpr(False, Type.Boolean)
+'''
 
 p = pe.Parser(NProgram)
 assert p.is_lalr_one()
