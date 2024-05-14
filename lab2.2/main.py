@@ -75,6 +75,9 @@ class CaseField(Filed):
     ident: Ident
     type_ident: TypeIdent
     constants : list[ConstItem]
+@dataclass
+class PakedType(Type):
+    pass
 
 @dataclass 
 class Record(PakedType):
@@ -107,9 +110,6 @@ class Program():
 class SimpleType(Type):
     identes : list[Ident]
 
-@dataclass
-class PakedType(Type):
-    pass
 
 @dataclass
 class Array(PakedType):
@@ -128,7 +128,6 @@ INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
 REAL = pe.Terminal('REAL', '[0-9]+(\\.[0-9]*)?(e[-+]?[0-9]+)?', float)
 IDENT = pe.Terminal('IDENTIFIRE', '[A-Za-z][A-Za-z0-9]*', str)
 STRING = pe.Terminal('STRING', '\'.*\'', str)
-CHAR = pe.Terminal('CHAR', '\"\p{L}?\"', str)
 
 def make_keyword(image):
     return pe.Terminal(image, image, lambda name: None, priority=10)
@@ -159,17 +158,19 @@ NRepetedIdent, NTwoConstants =\
 map(pe.NonTerminal, 'repeted_ident two_constants'.split())
 
 NFields, NField, NSimpleField, NCaseField =\
-map(pe.NonTerminal, 'fields field simple_field case_field')
+map(pe.NonTerminal, 'fields field simple_field case_field'.split())
 
-NConstantIdems, NConstantItem = \
+NConstantItems, NConstantItem = \
 map(pe.NonTerminal, 'constant_items const_item'.split())
 
 NNumberConst, NCharacterConst =\
 map(pe.NonTerminal,'number_constant character_constant'.split())
 
 NUnsigned_number, NUnsignedInt, NUnsignedFloat =\
-map(pe.NonTerminal,'unsigned_number unsigned_int unsigned_float')
+map(pe.NonTerminal,'unsigned_number unsigned_int unsigned_float'.split())
 
+NSimpleTypes, NConstants,NSign =\
+    map(pe.NonTerminal, 'simple_types constants sing'.split())
 
 NProgram |= NBlocks
 
@@ -181,6 +182,81 @@ NBlock |= NConstBlock
 
 NRecord |= KW_TYPE, NIdent, '=', NType, ';'
 NConstBlock |= KW_CONST, NConsts
+
+NConsts |= NConstDef, NConsts, lambda const_def, consts: consts + [const_def]
+NConsts |= lambda: []
+NConstDef |= NIdent, '=' , NConstant 
+
+NType |= NSimpleType
+NType |= '^' , NTypeIdent
+NType |= NPakedType
+NType |= NPakable
+
+NPakedType|= KW_PAKED, NPakable
+
+NPakable |= NArray
+NPakable |= NFile
+NPakable |= NSet
+NPakable |= NRecord
+
+NArray |= KW_ARRAY, '[', NSimpleType, NSimpleTypes, ']' , KW_OF, NType 
+
+NSimpleTypes |= ',',NSimpleType, NSimpleTypes
+NSimpleTypes |= lambda: []
+
+NFile |= KW_FILE, KW_OF, NType
+
+NSet |= KW_SET, KW_OF, NSimpleType
+
+NRecord |= KW_RECORD, NFields, KW_END
+
+NSimpleType |= NTypeIdent
+NSimpleType |= NRepetedIdent
+NSimpleType |= NTwoConstants
+
+NTwoConstants |= NConstant, '..', NConstant
+
+NFields |= lambda: []
+NFields |= NField, NFields
+
+NField |= NSimpleField
+NField |= NCaseField
+
+NSimpleField |= NRepetedIdent, ':', NType
+NSimpleField |= NRepetedIdent, ':', NType, ';', NFields
+
+NCaseField |= KW_CASE, NIdent, ':', NTypeIdent, KW_OF, NConstantItems
+
+NConstantItems |= NConstantItem, NConstantItems
+NConstantItems |= lambda: []
+
+NConstantItem |= NConstant, NConstants, ':', '(',NFields,')'
+
+NConstants |= ',', NConstant, NConstants
+NConstants |= lambda: []
+
+NConstant |= NNumberConst
+NConstant |= NCharacterConst
+
+NCharacterConst |= '\'', STRING, '\''
+
+NNumberConst |= NSign, NConstIdent 
+NNumberConst |= NSign, NUnsigned_number
+
+NSign |= '+'
+NSign |= '-'
+NSign |= lambda:[]
+
+NConstIdent |= NIdent
+
+NUnsigned_number |= NUnsignedInt
+NUnsigned_number |= NUnsignedFloat
+
+NUnsignedInt |= INTEGER
+NUnsignedFloat |= NUnsignedInt, '.', INTEGER, NSign, NUnsignedInt
+NUnsignedFloat |= NUnsignedInt, 'E', NSign, NUnsignedInt
+
+
 
 p = pe.Parser(NProgram)
 assert p.is_lalr_one()
