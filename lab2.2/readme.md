@@ -10,7 +10,7 @@
 
 В record’е точка с запятой разделяет поля и после case дополнительный end не ставится.
 
-''' Paskal
+``` Paskal
 Type
   Coords = Record x, y: INTEGER end;
 Const
@@ -62,42 +62,43 @@ TYPE
     value : Token;
     next : ^List
   end;
-'''
+```
 # Реализация
 
 ## Абстрактный синтаксис
 Программа состоит из списка блоков 
-'''
+```
 program -> block+
-'''
+```
 
 Блоки представляют собой либо объявление типа, либо объявление констант
-'''
+```
 block -> TYPE type_block | CONST const_block
-'''
+```
 
 Cам блок содержит список определений 
-'''
+```
 type_block -> type_def+
 const_block -> const_def+
-'''
+```
 
 Определения представляют собой идентификатор и значение
-'''
+```
 type_def -> ident '=' type ';'
 constant_def -> ident '=' constant ';' .
-'''
+```
 
 ## Лексическая структура и конкретный синтаксис
 Язык содержит следующие терминальные домены
+```
 INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
 REAL = pe.Terminal('REAL', '[0-9]+(\\.[0-9]*)?(e[-+]?[0-9]+)?', float)
 IDENT = pe.Terminal('IDENT', '[A-Za-z][A-Za-z0-9]*', str)
 STRING = pe.Terminal('STRING', '\'.*\'', str.upper)
+```
 
 Перейдём к конкретной грамматике 
-'''
-program -> blocks .
+```program -> blocks .
                                             
 blocks -> block blocks.
 blocks -> block .
@@ -186,9 +187,7 @@ unsigned_int  -> INTEGER .
 
 idents -> ident .
 idents -> idents ',' ident .
-
-                   
-'''
+```
 ## Программная реализация
 
 ```python
