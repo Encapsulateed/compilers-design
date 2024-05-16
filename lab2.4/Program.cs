@@ -19,7 +19,7 @@ namespace lab2._4
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
-            Console.WriteLine(prg);
+            //Console.WriteLine(prg);
 
 
             var tok = sc.NextToken();
