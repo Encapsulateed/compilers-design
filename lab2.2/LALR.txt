@@ -1,0 +1,89 @@
+program -> blocks .
+                                            
+blocks -> block blocks.
+blocks -> block .
+
+
+block -> TYPE record_block .
+block -> CONST const_block  .
+         
+record_block -> types .
+
+const_block -> consts .
+
+constas -> constant_def consts .
+constas -> constant_def .
+
+types -> type_def types .
+types -> type_def .
+
+constant_def -> ident '=' constant ';' .
+
+type -> simple_type .
+type -> '^' type_ident .
+type ->  paked_type .
+type ->  pakable .
+
+paked_type -> PAKED pakable .
+
+pakable ->  array .
+pakable ->  file .
+pakable ->  set .
+pakable ->  record .
+
+array -> ARRAY '[' simple_types ']' OF type .
+
+simple_types -> simple_types ',' simple_type  .
+
+simple_types -> simple_type .
+
+file -> FILE OF type .
+
+set -> SET OF simple_type .
+
+record ->  RECORD fields END .
+
+simple_type -> type_ident .
+simple_type -> '(' idents ')' .
+simple_type -> two_constants .  
+                   
+two_constants -> constant '..' constant .
+
+fields -> field fields .
+fields -> field .
+
+field -> idents ':' type ';' .
+field -> CASE ident ':' type_ident OF constant_items .
+
+constant_items -> const_item ';' constant_items .
+constant_items -> const_item .
+
+const_item ->  constants ':' '(' fields ')' .
+
+constants -> constants ',' constant .
+constants -> constant .
+
+
+constant -> number_constant .
+constant -> character_constant .
+
+
+number_constant -> constant_ident .
+number_constant -> unsigned_number .
+
+
+character_constant -> STRING .
+
+unsigned_number -> unsigned_int  .
+unsigned_number -> unsigned_float .
+
+             
+unsigned_float -> REAL .
+
+unsigned_int  -> INTEGER . 
+
+
+idents -> ident .
+idents -> idents ',' ident .
+
+                   

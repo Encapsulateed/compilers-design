@@ -190,10 +190,11 @@ NSimpleTypes, NConstants,NSign =\
 INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
 REAL = pe.Terminal('REAL', '[0-9]+(\\.[0-9]*)?(e[-+]?[0-9]+)?', float)
 IDENT = pe.Terminal('IDENT', '[A-Za-z][A-Za-z0-9]*', str)
-STRING = pe.Terminal('STRING', '\'.*\'', str)
+STRING = pe.Terminal('STRING', '\'.*\'', str.upper)
 
 def make_keyword(image):
-    return pe.Terminal(image, image, lambda name: None, priority=10)
+   return pe.Terminal(image, image, lambda name: None,
+                       re_flags=re.IGNORECASE, priority=10)
 
 KW_PAKED, KW_FILE, KW_SET,KW_ARRAY,KW_RECORD,KW_TYPE,KW_END,KW_CASE,KW_OF,KW_CONST =\
 map(make_keyword,'paked file set array record type end case of const'.split())

@@ -1,8 +1,8 @@
-type
+Type
   BaseColor = (red, green, blue, highlited);
   Color = set of BaseColor;
   GraphicScreen = array [1..Heigh] of array [ 1..Width] of Color;
-  TextScreen = array [1..Lines] of array [1..Columns] of
+  TextScreen = ARRAY [1..Lines] of array [1..Columns] of
     record
       Symbol : CHAR;
       SymColor : Color;
