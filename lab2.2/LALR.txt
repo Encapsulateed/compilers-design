@@ -17,10 +17,12 @@ constas -> constant_def .
 types -> type_def types .
 types -> type_def .
 
+type_def -> ident '=' type ';'
+
 constant_def -> ident '=' constant ';' .
 
 type -> simple_type .
-type -> '^' type_ident .
+type -> '^' poiter_ident .
 type ->  paked_type .
 type ->  pakable .
 

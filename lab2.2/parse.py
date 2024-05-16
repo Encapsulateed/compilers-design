@@ -24,6 +24,10 @@ class Ident():
 class TypeIdent(Ident):
     pass
 
+@dataclass 
+class Pointer(Ident):
+    pass
+
 @dataclass
 class ConstIdent(Ident):
     pass
@@ -152,8 +156,8 @@ map(make_keyword,'paked file set array record type end case of const'.split())
 KW_INTEGER, KW_REAL, KW_BOOLEAN, KW_CHAR = \
     map(make_keyword, 'integer real boolean char'.split())
 
-NProgram, NBlocks, NBlock  = \
-map(pe.NonTerminal, 'program blocks block'.split()) 
+NProgram, NBlocks, NBlock,NpointerIdent = \
+map(pe.NonTerminal, 'program blocks block poiter_ident'.split()) 
 
 NRecordBlock, NConstBlock = \
 map(pe.NonTerminal, 'record_block const_block'.split())
@@ -185,6 +189,7 @@ map(pe.NonTerminal,'unsigned_number unsigned_int unsigned_float'.split())
 
 NSimpleTypes, NConstants,NSign =\
     map(pe.NonTerminal, 'simple_types constants sing'.split())
+
 
 
 INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
@@ -223,7 +228,7 @@ NConstDef |= NIdent, '=', NConstant, ';' ,  ConstDef
 NType |= NSimpleType
 NType |= NPakedType
 NType |= NPakable
-NType |= '^', NTypeIdent
+NType |= '^', NpointerIdent
 
 NPakedType |= KW_PAKED, NPakable 
 
@@ -297,8 +302,7 @@ NTwoConstants |= NConstant, '..' , NConstant, TwoConstants
 NConstIdent |= IDENT, ConstIdent
 NTypeIdent |= IDENT, TypeIdent
 NIdent |= IDENT, Ident
-
-
+NpointerIdent |= IDENT, Pointer
 p = pe.Parser(NProgram)
 
 assert p.is_lalr_one()
