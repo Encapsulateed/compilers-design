@@ -6,7 +6,7 @@ from typing import Any
 import enum
 from pprint import pprint
 import sys
-
+import re
 class BaseType(enum.Enum):
     Integer = 'INTEGER'
     Real = 'REAL'
@@ -15,7 +15,6 @@ class BaseType(enum.Enum):
 
 class Type(abc.ABC):
     pass
-
 
 @dataclass 
 class Ident():
@@ -50,7 +49,6 @@ class UnsignedFloat(UnsignedNumber):
 class NumberConstant(Constant):
     ident: Ident
     value: UnsignedNumber
-    sign : str
 
 @dataclass 
 class CharacterConstant(Constant):
@@ -63,7 +61,7 @@ class Filed(abc.ABC):
 class SimpleFiled(Filed):
     idents: list[Ident]
     type: Type
-    list: list[Filed]
+
     
 @dataclass 
 class ConstItem():
@@ -93,17 +91,20 @@ class ConstDef():
     ident: Ident
     value: Constant
 
+
+@dataclass 
+class TypeDef():
+    ident: Ident
+    type: Type
 @dataclass 
 class RecordBlock(Block):
-    ident: Ident
-    type_ident: BaseType
-    #type : Type
-  #  after_eq: Ident
+    types: list[TypeDef]
+
+    
+    
 @dataclass 
 class ConstantBlock:
-    const_ident: Ident
-    const_type: BaseType
-    #const_list: list[ConstDef]
+    const_list: list[ConstDef]
     
 @dataclass 
 class Program():
@@ -112,8 +113,7 @@ class Program():
 
 @dataclass 
 class SimpleType(Type):
-    identes : list[Ident]
-
+    pass
 
 @dataclass
 class Array(PakedType):
@@ -128,13 +128,23 @@ class Set(PakedType):
 class File(PakedType):
     type: Type
 
+@dataclass 
+class TwoConstants(SimpleType):
+    fistr: Constant
+    second: Constant
+
+@dataclass 
+class Idents(SimpleType):
+    idents: list[Ident]
+
 INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
 REAL = pe.Terminal('REAL', '[0-9]+(\\.[0-9]*)?(e[-+]?[0-9]+)?', float)
 IDENT = pe.Terminal('IDENT', '[A-Za-z][A-Za-z0-9]*', str)
 STRING = pe.Terminal('STRING', '\'.*\'', str)
 
 def make_keyword(image):
-    return pe.Terminal(image, image, lambda name: None, priority=10)
+    return pe.Terminal(image, image, lambda name: None,
+                       re_flags=re.IGNORECASE, priority=10)
 
 KW_PAKED, KW_FILE, KW_SET,KW_ARRAY,KW_RECORD,KW_TYPE,KW_END,KW_CASE,KW_OF,KW_CONST =\
 map(make_keyword,'paked file set array record type end case of const'.split())
@@ -148,9 +158,9 @@ map(pe.NonTerminal, 'program blocks block'.split())
 NRecordBlock, NConstBlock = \
 map(pe.NonTerminal, 'record_block const_block'.split())
 
-NIdent, NType, NConsts, NConstDef,NConstant, NTypeIdent,NConstIdent = \
+NIdent, NType, NConsts, NConstDef,NConstant, NTypeIdent,NConstIdent, NTypes, NTypeDef = \
 map(pe.NonTerminal,'ident type consts constantd_def constant\
-                    type_ident const_ident'.split())
+                    type_ident const_ident types type_def'.split())
 
 NSimpleType, NPakedType, NPakable = \
 map(pe.NonTerminal,'simple_type paked_type pakable'.split())
@@ -158,8 +168,8 @@ map(pe.NonTerminal,'simple_type paked_type pakable'.split())
 NArray, NFile, NSet, NRecord = \
 map(pe.NonTerminal, 'array file set record'.split())
 
-NRepetedIdent, NTwoConstants =\
-map(pe.NonTerminal, 'repeted_ident two_constants'.split())
+NIdents, NTwoConstants =\
+map(pe.NonTerminal, 'idents two_constants'.split())
 
 NFields, NField, NSimpleField, NCaseField =\
 map(pe.NonTerminal, 'fields field simple_field case_field'.split())
@@ -199,29 +209,102 @@ NProgram |= NBlocks, Program
 NBlocks |= lambda: []
 NBlocks |= NBlocks, NBlock , lambda blocks, block: blocks + [block]
 
-NBlock |= NRecordBlock
-NBlock |= NConstBlock
+NBlock |= KW_TYPE, NRecordBlock
+NBlock |= KW_CONST, NConstBlock
 
-NRecordBlock |= KW_TYPE, NIdent, '=', NType, RecordBlock
-NConstBlock |= KW_CONST, NConstIdent, 'is', NType, ConstantBlock
-
-NConstIdent |= NIdent
-NTypeIdent |= IDENT
-NIdent |= IDENT
-
-NType |= KW_INTEGER, lambda: BaseType.Integer
-NType |= KW_REAL, lambda: BaseType.Real
-NType |= KW_BOOLEAN, lambda: BaseType.Boolean
+NRecordBlock |= NTypes, RecordBlock
+NConstBlock |=  NConsts, ConstantBlock
 
 
+NTypeDef |= NIdent, '=', NType, ';', TypeDef
+NConstDef |= NIdent, '=', NConstant, ';' ,  ConstDef
+
+NType |= NSimpleType
+NType |= NPakedType
+NType |= NPakable
+NType |= '^', NTypeIdent
+
+NPakedType |= KW_PAKED, NPakable 
+
+
+NPakable |= NArray
+NPakable |= NSet
+NPakable |= NFile
+NPakable |= NRecord
+
+NSet |= KW_SET, KW_OF, NSimpleType, Set
+NFile |= KW_FILE, KW_OF, NType, File
+NArray |= KW_ARRAY, '[', NSimpleTypes,']', KW_OF, NType, Array 
+
+NSimpleTypes |= NSimpleType, lambda st: [st]
+NSimpleTypes |= NSimpleTypes, ',' , NSimpleType , lambda sts, st: sts + [st]
+
+
+NRecord |= KW_RECORD, NFields, KW_END, Record
+
+
+NFields |= NField, lambda fld: [fld]
+NFields |= NFields, NField, lambda flds, fld: flds + [fld]
+
+NField |= NCaseField
+NField |= NSimpleField
+
+NSimpleField |= NIdents , ':', NType, ';', SimpleFiled
+NSimpleField |= NIdents , ':', NType , SimpleFiled
+
+NCaseField |= KW_CASE, NIdent, ':', NTypeIdent, KW_OF, NConstantItems, CaseField
+
+NConstantItems |= NConstantItem, lambda it: [it]
+NConstantItems |= NConstantItems, ';', NConstantItem, lambda its, it: its + [it]
+
+NConstantItem |= NConstants ,':' ,'(' , NFields, ')', ConstItem
+
+
+#######################################################
+
+NSimpleType |= NTwoConstants
+NSimpleType |='(',  NIdents, ')', Idents
+NSimpleType |= NTypeIdent 
+
+NConsts |= lambda:[]
+NConsts |= NConsts, NConstDef, lambda cds, cd: cds+[cd]
+
+NTypes |= lambda:[]
+NTypes |= NTypes, NTypeDef, lambda types, t: types+[t]
+
+NConstants |= NConstant, lambda c: [c]
+NConstants |= NConstants, ',' , NConstant, lambda cs, c: cs + [c]
+
+NIdents |= NIdent, lambda id: [id]
+NIdents |= NIdents, ',' , NIdent, lambda ids, id: ids + [id]
+
+
+NConstant |= NNumberConst
+NConstant |= NCharacterConst
+
+NNumberConst |= NConstIdent
+NNumberConst |= NUnsigned_number
+
+NUnsigned_number |= NUnsignedInt
+NUnsignedFloat |= NUnsignedFloat
+
+NUnsignedInt |= INTEGER, UnsignedInt
+NUnsignedFloat |= REAL, UnsignedFloat
+NCharacterConst |=  STRING, CharacterConstant
+
+NTwoConstants |= NConstant, '..' , NConstant, TwoConstants
+NConstIdent |= IDENT, ConstIdent
+NTypeIdent |= IDENT, TypeIdent
+NIdent |= IDENT, Ident
 
 
 p = pe.Parser(NProgram)
+
 assert p.is_lalr_one()
 
 p.add_skipped_domain('\\s')
-
 p.add_skipped_domain('(\\(\\*|\\{).*?(\\*\\)|\\})')
+
 for filename in sys.argv[1:]:
     try:
         with open(filename) as f:
