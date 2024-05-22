@@ -54,18 +54,21 @@ namespace lab2._3.src.Lexer
                         return new TermToken(word,prev_cur,cur.clone());
                     case ';':
                         cur++;
-                        return new SemiColonToken(DomainTag.SEMICOLON, prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.SC,";", prev_cur, cur.clone());
                     case '\n':
                         cur++;
-                        return new NLToken(DomainTag.NL, prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.SC, "\\n", prev_cur, cur.clone());
+                    case ',':
+                        cur++;
+                        return new SpecialToken(DomainTag.COMMA, ",", prev_cur, cur.clone());
                     case ':':
                         cur++;
                         cur++;
                         cur++;
-                        return new EQToken(DomainTag.KW_EQ, prev_cur, cur.clone());
+                        return new KeyWordToken(DomainTag.KW_EQ, "::=", prev_cur, cur.clone());
                     case '|':
                         cur++;
-                        return new ALTToken(DomainTag.ALT, prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.SC, "|", prev_cur, cur.clone());
                     case '#':
                         cur++;
                         word+= (char)cur.Cp;

@@ -16,11 +16,11 @@ namespace lab2._3.src.Tokens
         KW_NONTERMINAL,
         KW_TERMINAL,
         KW_EQ,
-        RULE,
         NL,
         ERROR,
-        SEMICOLON,
-        ALT,
+        SC,
+        OR,
+        COMMA,
         EOF
     }
 

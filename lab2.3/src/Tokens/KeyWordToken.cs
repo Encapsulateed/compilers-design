@@ -14,7 +14,7 @@ namespace lab2._3.src.Tokens
 
         public KeyWordToken(DomainTag tag, string value, Position starting, Position following) : base(tag, starting, following)
         {
-            Debug.Assert(tag == DomainTag.KW_NONTERMINAL || tag == DomainTag.KW_EPS || tag == DomainTag.KW_AXIOM || tag == DomainTag.KW_TERMINAL);
+            Debug.Assert(tag == DomainTag.KW_NONTERMINAL || tag == DomainTag.KW_EPS || tag == DomainTag.KW_AXIOM || tag == DomainTag.KW_TERMINAL||tag == DomainTag.KW_EQ);
             keyword = value;
         }
 

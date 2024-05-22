@@ -20,16 +20,11 @@ namespace lab2._3
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
-            var parser = new Parser();
-            var tree = parser.parse(sc);
-
-             tree.Print("");
-            /*
             var tok = sc.NextToken();
             while (tok.Tag != DomainTag.EOF)
             {
                 var st = tok.ToString();
-               
+
                 Console.WriteLine(st);
                 tok = sc.NextToken();
 
@@ -41,7 +36,15 @@ namespace lab2._3
             }
             Console.WriteLine();
             cp.OutPutMessages();
-             */
+
+             cp = new Compiler();
+             sc = new Scanner(prg, cp);
+
+            var parser = new Parser();
+             var tree = parser.parse(sc);
+
+               tree.Print("");
+          
 
         }
     }

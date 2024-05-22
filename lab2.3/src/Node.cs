@@ -28,7 +28,7 @@ namespace lab2._3.src
         public InnerNode(string nterm)
         {
             this.nterm = nterm;
-            this.children = new List<INode>();
+            children = new List<INode>();
         }
 
         public void Print(string indent)
@@ -57,14 +57,8 @@ namespace lab2._3.src
 
         public void Print(string indent)
         {
-            if (tok.Tag == DomainTag.TERM || tok.Tag == DomainTag.NON_TERM)
-            {
-                Console.WriteLine($"{indent}Лист: {tok.Tag} - {tok}");
-            }
-            else
-            {
-                Console.WriteLine($"{indent} Лист: {tok}");
-            }
+            Console.WriteLine($"{indent}Лист:  {tok}");
+
         }
     }
 
