@@ -24,6 +24,8 @@ namespace lab2._3.src.Tokens
         EOF
     }
 
+   
+
     internal abstract class Token
     {
         public readonly DomainTag Tag;

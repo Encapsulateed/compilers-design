@@ -1,4 +1,5 @@
-﻿using lab2._3.src.Lexer;
+﻿using lab2._3.src;
+using lab2._3.src.Lexer;
 using lab2._3.src.Tokens;
 
 namespace lab2._3
@@ -7,6 +8,7 @@ namespace lab2._3
     {
         static void Main(string[] args)
         {
+
             var lines = File.ReadAllLines("input.txt");
             string prg = "";
 
@@ -18,8 +20,11 @@ namespace lab2._3
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
+            var parser = new Parser();
+            var tree = parser.parse(sc);
 
-
+             tree.Print("");
+            /*
             var tok = sc.NextToken();
             while (tok.Tag != DomainTag.EOF)
             {
@@ -36,6 +41,8 @@ namespace lab2._3
             }
             Console.WriteLine();
             cp.OutPutMessages();
+             */
+
         }
     }
 }

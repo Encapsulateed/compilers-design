@@ -7,11 +7,18 @@ using System.Threading.Tasks;
 
 namespace lab2._3.src
 {
-    interface INode
+    public interface INode
     {
+
         void Print(string indent);
     }
 
+    struct StackNode { 
+       public InnerNode node;
+       public string value;
+
+
+    }
 
     class InnerNode : INode
     {

@@ -66,17 +66,23 @@ namespace lab2._3.src.Lexer
                     case '|':
                         cur++;
                         return new ALTToken(DomainTag.ALT, prev_cur, cur.clone());
-                    default:
-                        // либо объявление 
-                        // либо правило 
-                        if (cur.Cp == -1)
+                    case '#':
+                        cur++;
+                        word+= (char)cur.Cp;
+                        while (!cur.IsNewLine || cur.Cp != -1)
                         {
-
+                            word += (char)cur.Cp;
+                            cur++;
                         }
-                        else
+                        Comments.Add(new Fragment(prev_cur, cur.clone()));
+                        break;
+                    default:
+       
+             
+                        if (cur.Cp != -1)
                         {
-
-
+                            // либо объявление 
+                            // либо правило 
                             if (cur.isNonTerm)
                             {
                                 word += (char)cur.Cp;
