@@ -11,60 +11,48 @@ namespace lab2._3.src
 {
     internal class Parser
     {
-        Dictionary<string, List<string>> table = new Dictionary<string, List<string>>()
+        Dictionary<string, string[]> table = new Dictionary<string, string[]>()
         {
-            { "program kw_nonterminal",new List<string>(){"decls", "rules", "axiom"} },
-            { "program kw_terminal",new List<string>(){ "decls", "rules", "axiom" } },
-            { "program non_term",new List<string>(){ "decls", "rules", "axiom" } },
-            { "program kw_axiom",new List<string>(){ "decls", "rules", "axiom" } },
-        
+            {"program kw_nonterminal", new string[] {"decl","rules","axiom" } },
 
-            { "decls kw_nonterminal",new List<string>(){ "decl","decls"} },
-            { "decls kw_terminal",new List<string>(){  "decl","decls"} },
-            { "decls non_term",new List<string>(){} },
-            { "decls kw_axiom",new List<string>(){} },
+            {"rules kw_axiom", new string[] {} },
+            {"rules non_term", new string[] {"rule","rules" } },
 
-            { "rules non_term",new List<string>(){ "rule", "rules"} },
-            { "rules kw_axiom",new List<string>(){ } },
+            {"decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", "kw_terminal","terms","sc" } },
 
-            { "axiom kw_axiom",new List<string>(){ "kw_axiom","non_term","sc"} },
+            {"axiom kw_axiom", new string[] { "kw_axiom", "non_term", "sc" } },
 
-            { "decl kw_nonterminal",new List<string>(){ "kw_nonterminal","non_terms","sc" } },
-            { "decl kw_terminal",new List<string>(){ "kw_terminal","terms","sc" } },
+            {"rule non_term", new string[] { "non_term", "kw_eq","alts","sc" } },
 
+            {"non_terms non_term", new string[] { "non_term", "non_term_tail" } },
 
+            {"non_term_tail sc", new string[] { } },
+            {"non_term_tail comma", new string[] {"comma","non_terms" } },
 
-            { "rule non_term",new List<string>(){"non_term", "kw_eq","alts","sc"} },
+            {"terms term", new string[] { "term", "term_tail" } },
 
-             { "non_terms non_term",new List<string>(){"non_term","non_term_tail"} },
-             { "non_term_tail sc",new List<string>(){} },
-             { "non_term_tail comma",new List<string>(){"comma","non_terms"} },
+            {"term_tail sc", new string[] { } },
+            {"term_tail comma", new string[] {"comma","terms" } },
 
+            {"alts non_term", new string[] {"symbols","alt_tail" } },
+            {"alts term", new string[] {"symbols","alt_tail" } },
+            {"alts kw_eps", new string[] {"symbols","alt_tail" } },
 
-             { "terms term",new List<string>(){"term","term_tail"} },
-             { "term_tail sc",new List<string>(){} },
-             { "term_tail comma",new List<string>(){"comma","terms"} },
+            {"alt_tail or", new string[] {"or","alts" } },
 
-            { "alts non_term",new List<string>(){"symbols","alt_tail"} },
-            { "alts term",new List<string>(){"symbols","alt_tail"} },
-            { "alts kw_eps",new List<string>(){"symbols","alt_tail"} },
+            {"alt_tail sc", new string[] {} },
 
-
-            { "alt_tail sc",new List<string>(){ } },
-            { "alt_tail or",new List<string>(){"or","alts" } },
-
-            { "alt symbols",new List<string>(){"symbols" } },
-            { "alt or",new List<string>(){ "kw_eps" } },
-
-            { "symbols non_term",new List<string>(){ "non_term","symbols"} },
-            { "symbols term",new List<string>(){ "term","symbols"} },
-            { "symbols kw_eps",new List<string>(){ "kw_eps", "symbols"} },
+            {"symbols non_term", new string[] {"non_term", "symbols"} },
+            {"symbols term", new string[] {"term", "symbols"} },
+            {"symbols kw_eps", new string[] { "kw_eps", "symbols"} },
+            {"symbols sc", new string[] { } },
+            {"symbols or", new string[] { } }
         };
 
         bool isTerminal(string str)
         {
-            return !(str == "program" || str == "decls" || str == "rules" || str =="decl" ||
-                str == "axiom" || str == "rule" || str == "non_terms" || str == "non_term_tail" ||
+            return !(str == "program" || str == "rules" || str == "decl" || str =="axiom" ||
+                str == "rule" || str == "non_terms" || str == "non_term_tail" ||
                 str == "terms" || str =="term_tail" || str =="alts" || str =="alt_tail"||str =="symbols");
         }
 
@@ -82,59 +70,45 @@ namespace lab2._3.src
            
             while (tok.Tag != DomainTag.EOF && stack.Count != 0) 
             {
-                var lower_tag = tok.Tag.ToString().ToLower();
-
                 var top = stack.Pop();
 
+                var lexer_tag = tok.Tag.ToString().ToLower();
+
+             //   start.Print("");
+                //Console.WriteLine($"tag: {top.value} : {lexer_tag}");
                 if (isTerminal(top.value))
                 {
                     top.node.AddChild(new Leaf(tok));
+
                     tok = sc.NextToken();
-                    
 
                 }
-                else if (table.ContainsKey($"{top.value} {lower_tag}"))
+                else if (table.Keys.Contains($"{top.value} {tok.Tag.ToString().ToLower()}"))
                 {
                     var inner = new InnerNode(top.value);
                     top.node.AddChild(inner);
 
-                    var go_to = table[$"{top.value} {tok.Tag.ToString().ToLower()}"];
+                    var go = table[$"{top.value} {tok.Tag.ToString().ToLower()}"];
       
-                    go_to.Reverse();
+               
 
-                    foreach (var go in go_to)
-                        stack.Push(new StackNode() { value = go, node = inner });
+                    for(int i = go.Length - 1; i >= 0; i--)
+                    {
+                        stack.Push(new StackNode() { value = go[i], node = inner });
+                    }
+              
+                    
                     
                 }
                 else
                 {
-                       throw new Exception($"Invalid Token {top.value} {lower_tag}");
+                      throw new Exception($"Invalid Tokens {top.value} {lexer_tag}");
                 }
             }
 
             return start;
         }
-        private static void PrintStack<StackNode>(Stack<StackNode> stack)
-        {
-            if (stack == null)
-            {
-                Console.WriteLine("Stack is null.");
-                return;
-            }
-
-            if (stack.Count == 0)
-            {
-                Console.WriteLine("Stack is empty.");
-                return;
-            }
-
-            Console.WriteLine("Stack contents:");
-
-            foreach (var item in stack)
-            {
-                Console.WriteLine(item);
-            }
-        }
+   
     }
 
 }

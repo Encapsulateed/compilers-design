@@ -21,6 +21,7 @@ namespace lab2._3.src.Tokens
         SC,
         OR,
         COMMA,
+        COMMENT,
         EOF
     }
 

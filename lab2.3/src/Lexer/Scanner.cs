@@ -57,7 +57,7 @@ namespace lab2._3.src.Lexer
                         return new SpecialToken(DomainTag.SC,";", prev_cur, cur.clone());
                     case '\n':
                         cur++;
-                        return new SpecialToken(DomainTag.SC, "\\n", prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.NL, "\\n", prev_cur, cur.clone());
                     case ',':
                         cur++;
                         return new SpecialToken(DomainTag.COMMA, ",", prev_cur, cur.clone());
@@ -68,17 +68,17 @@ namespace lab2._3.src.Lexer
                         return new KeyWordToken(DomainTag.KW_EQ, "::=", prev_cur, cur.clone());
                     case '|':
                         cur++;
-                        return new SpecialToken(DomainTag.SC, "|", prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.OR, "|", prev_cur, cur.clone());
                     case '#':
                         cur++;
-                        word+= (char)cur.Cp;
-                        while (!cur.IsNewLine || cur.Cp != -1)
+                      
+                        while (!cur.IsNewLine)
                         {
                             word += (char)cur.Cp;
                             cur++;
                         }
                         Comments.Add(new Fragment(prev_cur, cur.clone()));
-                        break;
+                        break;                        
                     default:
        
              

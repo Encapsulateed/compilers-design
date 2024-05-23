@@ -36,15 +36,15 @@ namespace lab2._3
             }
             Console.WriteLine();
             cp.OutPutMessages();
-
-             cp = new Compiler();
-             sc = new Scanner(prg, cp);
+            
+            cp = new Compiler();
+            sc = new Scanner(prg, cp);
 
             var parser = new Parser();
-             var tree = parser.parse(sc);
 
-               tree.Print("");
-          
+            var tree = parser.parse(sc);
+            tree.Print("");
+
 
         }
     }
