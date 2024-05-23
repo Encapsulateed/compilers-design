@@ -43,8 +43,7 @@ namespace lab2._3.src.Lexer
                         }
                         if(cur.Cp != '\'' || cur.Cp == -1)
                         {
-                            compiler.AddMessage(isErr: true, cur, "term must end with ' symbol!");
-                            
+                            compiler.AddMessage(isErr: true, cur, "term must end with ' symbol!");   
                             return new Erorr(DomainTag.ERROR,prev_cur, cur.clone());    
                         }
 
@@ -84,8 +83,7 @@ namespace lab2._3.src.Lexer
              
                         if (cur.Cp != -1)
                         {
-                            // либо объявление 
-                            // либо правило 
+
                             if (cur.isNonTerm)
                             {
                                 word += (char)cur.Cp;
