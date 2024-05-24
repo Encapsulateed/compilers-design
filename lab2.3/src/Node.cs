@@ -22,7 +22,7 @@ namespace lab2._3.src
 
     class InnerNode : INode
     {
-        private string nterm;
+        public string nterm { get; private set; }
         private List<INode> children;
 
         public InnerNode(string nterm)
@@ -57,7 +57,13 @@ namespace lab2._3.src
 
         public void Print(string indent)
         {
-            Console.WriteLine($"{indent}Лист:  {tok}");
+            string val = string.Empty;
+            if(tok.Tag == DomainTag.TERM)
+                val = ((TermToken)tok).term;
+            if (tok.Tag == DomainTag.NON_TERM)
+                val = ((NonTerm)tok).nterm;
+
+            Console.WriteLine($"{indent}Лист:  {tok.Tag} {val}");
 
         }
     }
