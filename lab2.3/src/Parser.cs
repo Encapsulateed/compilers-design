@@ -44,7 +44,7 @@ namespace lab2._3.src
 
             {"symbols non_term", new string[] {"non_term", "symbols"} },
             {"symbols term", new string[] {"term", "symbols"} },
-            {"symbols kw_eps", new string[] { "kw_eps", "symbols"} },
+            {"symbols kw_eps", new string[] { "kw_eps", } },
             {"symbols sc", new string[] { } },
             {"symbols or", new string[] { } }
         };
@@ -67,15 +67,14 @@ namespace lab2._3.src
 
 
             Token tok = sc.NextToken();
-
-            while (tok.Tag != DomainTag.EOF && stack.Count != 0)
+           
+            while (tok.Tag != DomainTag.EOF && stack.Count != 0) 
             {
                 var top = stack.Pop();
 
                 var lexer_tag = tok.Tag.ToString().ToLower();
 
-                //   start.Print("");
-                //Console.WriteLine($"tag: {top.value} : {lexer_tag}");
+
                 if (isTerminal(top.value))
                 {
                     top.node.AddChild(new Leaf(tok));
@@ -89,25 +88,26 @@ namespace lab2._3.src
                     top.node.AddChild(inner);
 
                     var go = table[$"{top.value} {tok.Tag.ToString().ToLower()}"];
+      
+               
 
-
-
-                    for (int i = go.Length - 1; i >= 0; i--)
+                    for(int i = go.Length - 1; i >= 0; i--)
                     {
                         stack.Push(new StackNode() { value = go[i], node = inner });
                     }
-
-
-
+              
+                    
+                    
                 }
                 else
                 {
-                    throw new Exception($"Invalid Tokens {top.value} {lexer_tag}");
+                      throw new Exception($"Invalid Tokens {top.value} {lexer_tag}");
                 }
             }
 
             return start;
         }
+   
     }
 
 }

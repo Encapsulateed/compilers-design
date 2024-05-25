@@ -74,8 +74,6 @@ namespace lab2._3.src
 
                 var lexer_tag = tok.Tag.ToString().ToLower();
 
-                //   start.Print("");
-                //Console.WriteLine($"tag: {top.value} : {lexer_tag}");
                 if (isTerminal(top.value))
                 {
                     top.node.AddChild(new Leaf(tok));
