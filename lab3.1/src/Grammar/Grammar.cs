@@ -4,6 +4,7 @@ using lab3._1.src.Exeptions;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using System.Data;
 using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
@@ -13,26 +14,32 @@ namespace lab3._1.src.Grammar
 {
     internal class Grammar
     {
-        public HashSet<string> terms { get; private set; } = new HashSet<string>();
-        public HashSet<string> non_terms { get; private set; } = new HashSet<string>();
-        public Dictionary<string, List<List<string>>> rules { get; private set; } = new Dictionary<string, List<List<string>>>();
+        public HashSet<string> Terms { get; private set; } = new HashSet<string>();
+        public HashSet<string> NonTerms { get; private set; } = new HashSet<string>();
+        public Dictionary<string, List<List<string>>> Rules { get; private set; } = new Dictionary<string, List<List<string>>>();
         public Axiom axiom { get; private set; } = new Axiom(string.Empty);
+
+        public Dictionary<string, HashSet<string>> FollowSets = new Dictionary<string, HashSet<string>>();
+        public Dictionary<string, HashSet<string>> FirsrtSets = new Dictionary<string, HashSet<string>>();
+
+        private const string EPS = "$";
 
         private string CurrentNonTerm { get; set; } = string.Empty;
         private int CurrentListIndex
         {
             get
             {
-                if (!rules.ContainsKey(CurrentNonTerm))
+                if (!Rules.ContainsKey(CurrentNonTerm))
                     return -1;
 
-                return rules[CurrentNonTerm].Count - 1;
+                return Rules[CurrentNonTerm].Count - 1;
 
             }
         }
 
         public Grammar(INode tree)
         {
+
             void Traverse(INode tree)
             {
                 if (tree is not InnerNode)
@@ -73,11 +80,11 @@ namespace lab3._1.src.Grammar
                             throw new InvalidTree(node.nterm);
                         if (!axiom.isEmpty)
                             throw new TooManyAxiomException();
-                       
+
 
                         var nt = ((NonTerm)((Leaf)node.children[1]).tok).nterm;
 
-                        if (!non_terms.Contains(nt))
+                        if (!NonTerms.Contains(nt))
                             throw new NoSuchNonTerminalException(nt);
 
                         axiom = new Axiom(nt);
@@ -93,13 +100,13 @@ namespace lab3._1.src.Grammar
 
                         var rule_left = ((NonTerm)((Leaf)node.children[0]).tok).nterm;
 
-                        if (!non_terms.Contains(rule_left))
+                        if (!NonTerms.Contains(rule_left))
                             throw new NoSuchNonTerminalException(rule_left);
 
 
                         CurrentNonTerm = rule_left;
 
-                        rules[rule_left] = new List<List<string>>
+                        Rules[rule_left] = new List<List<string>>
                         {
                             new List<string>()
                         };
@@ -115,7 +122,7 @@ namespace lab3._1.src.Grammar
                         if (node.children.Count != 0)
                         {
                             var new_nt = ((NonTerm)((Leaf)node.children[0]).tok).nterm;
-                            non_terms.Add(new_nt);
+                            NonTerms.Add(new_nt);
                         }
 
 
@@ -136,8 +143,8 @@ namespace lab3._1.src.Grammar
                         if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term;
-                        terms.Add(new_term);
+                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term[1].ToString(); ;
+                        Terms.Add(new_term);
 
                         node.children.ForEach(Traverse);
 
@@ -165,7 +172,7 @@ namespace lab3._1.src.Grammar
 
                         if (node.children.Count != 0)
                         {
-                            rules[CurrentNonTerm].Add(new List<string>());
+                            Rules[CurrentNonTerm].Add(new List<string>());
                             node.children.ForEach(Traverse);
                         }
                         break;
@@ -180,25 +187,25 @@ namespace lab3._1.src.Grammar
                             if (leaf_value is NonTerm)
                             {
                                 leaf = ((NonTerm)leaf_value).nterm;
-                                if (!non_terms.Contains(leaf))
+                                if (!NonTerms.Contains(leaf))
                                     throw new NoSuchNonTerminalException(leaf);
                             }
                             else if (leaf_value is TermToken)
                             {
-                                leaf = ((TermToken)leaf_value).term;
-                                if (!terms.Contains(leaf))
+                                leaf = ((TermToken)leaf_value).term[1].ToString();
+                                if (!Terms.Contains(leaf))
                                     throw new NoSuchTerminalException(leaf);
                             }
                             else if (leaf_value is KeyWordToken)
                             {
-                                leaf = "eps";
+                                leaf = EPS;
                             }
 
 
-                            rules[CurrentNonTerm][CurrentListIndex].Add(leaf);
+                            Rules[CurrentNonTerm][CurrentListIndex].Add(leaf);
                             node.children.ForEach(Traverse);
                         }
-                        else if(node.children.Count !=0)
+                        else if (node.children.Count != 0)
                         {
                             throw new InvalidNonTermLenght(node.nterm);
 
@@ -216,24 +223,26 @@ namespace lab3._1.src.Grammar
             }
 
             Traverse(tree);
+            FirsrtSets = CalculateFirstSets();
+            FollowSets = CalculateFollowSets();
         }
 
         public void Print()
         {
             Console.WriteLine($"Аксиома грамматики: {axiom.ToString()}");
             Console.WriteLine("Правила грамматики:");
-            foreach (var nt in rules.Keys)
+            foreach (var nt in Rules.Keys)
             {
                 var rule = new StringBuilder(nt);
                 rule.Append(" -> ");
-                foreach (var alt in rules[nt])
+                foreach (var alt in Rules[nt])
                 {
                     foreach (var symbol in alt)
                     {
                         rule.Append(symbol.ToString());
                         rule.Append(" ");
                     }
-                    if (rules[nt].Count > 1 && rules[nt].IndexOf(alt) != rules[nt].Count - 1)
+                    if (Rules[nt].Count > 1 && Rules[nt].IndexOf(alt) != Rules[nt].Count - 1)
                     {
                         rule.Append("| ");
                     }
@@ -243,8 +252,147 @@ namespace lab3._1.src.Grammar
 
 
         }
-    
-        
+        public Dictionary<string, HashSet<string>> CalculateFirstSets()
+        {
+            var firstByNonTerm = NonTerms.ToDictionary(nt => nt, nt => new HashSet<string>());
+
+            foreach (var nonTerm in NonTerms)
+            {
+                FindFirst(firstByNonTerm, nonTerm);
+            }
+
+            return firstByNonTerm;
+        }
+
+        private HashSet<string> FindFirst(Dictionary<string, HashSet<string>> firstByNonTerm, string symbol)
+        {
+            if (firstByNonTerm.ContainsKey(symbol) && firstByNonTerm[symbol].Count > 0)
+            {
+                return firstByNonTerm[symbol];
+            }
+
+            var first = new HashSet<string>();
+
+            if (symbol == EPS)
+            {
+                first.Add(EPS);
+                return first;
+            }
+
+            if (Terms.Contains(symbol))
+            {
+                first.Add(symbol);
+                return first;
+            }
+
+            foreach (var alt in Rules[symbol])
+            {
+                foreach (var rightSymbol in alt)
+                {
+                    var firstOfRight = FindFirst(firstByNonTerm, rightSymbol);
+
+                    foreach (var k in firstOfRight)
+                    {
+                        if (k != EPS || firstOfRight.Count == 1)
+                        {
+                            first.Add(k);
+                        }
+                    }
+
+                    if (!firstOfRight.Contains(EPS))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            firstByNonTerm[symbol] = first;
+            return first;
+        }
+
+        public Dictionary<string, HashSet<string>> CalculateFollowSets()
+        {
+            var firstByNonTerm = CalculateFirstSets();
+            var followByNonTerm = NonTerms.ToDictionary(nt => nt, nt => new HashSet<string>());
+
+            foreach (var nonTerm in NonTerms)
+            {
+                FindFollow(firstByNonTerm, followByNonTerm, nonTerm);
+            }
+
+            return followByNonTerm;
+        }
+
+        private HashSet<string> FindFollow(Dictionary<string, HashSet<string>> firstByNonTerm, Dictionary<string, HashSet<string>> followByNonTerm, string symbol)
+        {
+            if (followByNonTerm.ContainsKey(symbol) && followByNonTerm[symbol].Count > 0)
+            {
+                return followByNonTerm[symbol];
+            }
+
+            var followSet = new HashSet<string>();
+
+            if (symbol == axiom.non_term)
+            {
+                followSet.Add("$");
+            }
+
+            var visited = new HashSet<string> { symbol };
+
+            foreach (var (key, rule) in Rules)
+            {
+                foreach (var alt in rule)
+                {
+                    for (int i = 0; i < alt.Count; i++)
+                    {
+                        var rightSymbol = alt[i];
+                        if (rightSymbol == symbol && i < alt.Count - 1)
+                        {
+                            var next = alt[i + 1];
+                            var firstNext = FindFirst(firstByNonTerm, next);
+
+                            foreach (var firstSymbol in firstNext)
+                            {
+                                if (firstSymbol != EPS)
+                                {
+                                    followSet.Add(firstSymbol);
+                                }
+                            }
+
+                            if (firstNext.Contains(EPS))
+                            {
+                                if (!visited.Contains(key))
+                                {
+                                    visited.Add(key);
+                                    var followOfKey = FindFollow(firstByNonTerm, followByNonTerm, key);
+                                    foreach (var followSymbol in followOfKey)
+                                    {
+                                        followSet.Add(followSymbol);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (rightSymbol == symbol && i == alt.Count - 1)
+                        {
+                            if (!visited.Contains(key))
+                            {
+                                visited.Add(key);
+                                var followOfKey = FindFollow(firstByNonTerm, followByNonTerm, key);
+                                foreach (var followSymbol in followOfKey)
+                                {
+                                    followSet.Add(followSymbol);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            followByNonTerm[symbol] = followSet;
+
+            return followSet;
+        }
     }
 
 
