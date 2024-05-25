@@ -13,10 +13,13 @@ namespace lab2._3.src
     {
         Dictionary<string, string[]> table = new Dictionary<string, string[]>()
         {
-            {"program kw_nonterminal", new string[] {"decl","rules","axiom" } },
+            {"program kw_nonterminal", new string[] {"decl","rules","axioms" } },
 
             {"rules kw_axiom", new string[] {} },
             {"rules non_term", new string[] {"rule","rules" } },
+
+            {"axioms kw_axiom", new string[] {"axiom","axioms"} },
+
 
             {"decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", "kw_terminal","terms","sc" } },
 
@@ -53,7 +56,7 @@ namespace lab2._3.src
         {
             return !(str == "program" || str == "rules" || str == "decl" || str =="axiom" ||
                 str == "rule" || str == "non_terms" || str == "non_term_tail" ||
-                str == "terms" || str =="term_tail" || str =="alts" || str =="alt_tail"||str =="symbols");
+                str == "terms" || str =="term_tail" || str =="alts" || str =="alt_tail"||str =="symbols" || str == "axioms");
         }
 
         public INode parse(Scanner sc)

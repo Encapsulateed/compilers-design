@@ -14,10 +14,11 @@ namespace lab3._1.src.Exeptions
         public TooManyAxiomException() : base(_message) { }
     }
 
-    public class InvalidNonTermLenght: Exception
+    public class InvalidNonTermLenght : Exception
     {
         static string _message = "Накорректная длина: ";
-        public InvalidNonTermLenght(string nt) : base(_message + nt) { }
+
+        public InvalidNonTermLenght(string nt) : base(_message + nt ) { }
     }
 
     public class InvalidTree : Exception

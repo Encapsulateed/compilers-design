@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,22 +15,25 @@ namespace lab3._1.src.Grammar
     {
         public HashSet<string> terms { get; private set; } = new HashSet<string>();
         public HashSet<string> non_terms { get; private set; } = new HashSet<string>();
-        public Dictionary<string,List<List<string>>>  rules { get; private set; } = new Dictionary<string, List<List<string>>>();
-        public Axiom axiom { get; private set; }
+        public Dictionary<string, List<List<string>>> rules { get; private set; } = new Dictionary<string, List<List<string>>>();
+        public Axiom axiom { get; private set; } = new Axiom(string.Empty);
 
-        private string CurrentNonTerm { get; set; }
-        private int CurrentListIndex { get 
-            {
-                if (rules.ContainsKey(CurrentNonTerm))
-                    return -1;
-                
-                return rules[CurrentNonTerm].Count - 1;
-                
-            } }
-
-        public Grammar(INode tree) 
+        private string CurrentNonTerm { get; set; } = string.Empty;
+        private int CurrentListIndex
         {
-             void Traverse(INode tree)
+            get
+            {
+                if (!rules.ContainsKey(CurrentNonTerm))
+                    return -1;
+
+                return rules[CurrentNonTerm].Count - 1;
+
+            }
+        }
+
+        public Grammar(INode tree)
+        {
+            void Traverse(INode tree)
             {
                 if (tree is not InnerNode)
                     return;
@@ -38,16 +42,17 @@ namespace lab3._1.src.Grammar
 
                 switch (node.nterm)
                 {
+
                     case "program":
                         if (node.children.Count != 3)
                             throw new InvalidNonTermLenght(node.nterm);
-                        
+
                         node.children.ForEach(Traverse);
 
                         break;
 
                     case "rules":
-                        if (node.children.Count != 2 || node.children.Count != 0)
+                        if (node.children.Count != 2 && node.children.Count != 0)
                             throw new InvalidNonTermLenght(node.nterm);
 
                         node.children.ForEach(Traverse);
@@ -62,25 +67,33 @@ namespace lab3._1.src.Grammar
 
                         break;
                     case "axiom":
-                        if(node.children.Count != 3)
+                        if (node.children.Count != 3)
                             throw new InvalidNonTermLenght(node.nterm);
                         if (node.children[1] is not Leaf)
                             throw new InvalidTree(node.nterm);
                         if (!axiom.isEmpty)
                             throw new TooManyAxiomException();
+                       
 
                         var nt = ((NonTerm)((Leaf)node.children[1]).tok).nterm;
+
+                        if (!non_terms.Contains(nt))
+                            throw new NoSuchNonTerminalException(nt);
+
                         axiom = new Axiom(nt);
-                    
+
+                        node.children.ForEach(Traverse);
+
+
                         break;
 
                     case "rule":
-                        if(node.children.Count != 4)
+                        if (node.children.Count != 4)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        var rule_left = ((NonTerm)node.children[0]).nterm;
+                        var rule_left = ((NonTerm)((Leaf)node.children[0]).tok).nterm;
 
-                        if(!non_terms.Contains(rule_left))
+                        if (!non_terms.Contains(rule_left))
                             throw new NoSuchNonTerminalException(rule_left);
 
 
@@ -96,25 +109,25 @@ namespace lab3._1.src.Grammar
                         break;
 
                     case "non_terms":
-                        if (node.children.Count != 2 )
+                        if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
-                        
+
                         if (node.children.Count != 0)
                         {
-                            var new_nt = ((NonTerm)node.children[0]).nterm;
+                            var new_nt = ((NonTerm)((Leaf)node.children[0]).tok).nterm;
                             non_terms.Add(new_nt);
                         }
-                       
+
 
                         node.children.ForEach(Traverse);
 
                         break;
 
                     case "non_term_tail":
-                        if (node.children.Count != 2 || node.children.Count != 0)
+                        if (node.children.Count != 2 && node.children.Count != 0)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        if (node.children.Count != 0)                       
+                        if (node.children.Count != 0)
                             node.children.ForEach(Traverse);
 
                         break;
@@ -123,7 +136,7 @@ namespace lab3._1.src.Grammar
                         if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        var new_term = ((TermToken)node.children[0]).term;
+                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term;
                         terms.Add(new_term);
 
                         node.children.ForEach(Traverse);
@@ -131,7 +144,7 @@ namespace lab3._1.src.Grammar
                         break;
 
                     case "term_tail":
-                        if (node.children.Count != 2 || node.children.Count != 0)
+                        if (node.children.Count != 2 && node.children.Count != 0)
                             throw new InvalidNonTermLenght(node.nterm);
 
                         if (node.children.Count != 0)
@@ -140,20 +153,20 @@ namespace lab3._1.src.Grammar
                         break;
 
                     case "alts":
-                        if (node.children.Count != 2 )
+                        if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
                         node.children.ForEach(Traverse);
 
                         break;
 
                     case "alt_tail":
-                        if (node.children.Count != 2 || node.children.Count != 0)
+                        if (node.children.Count != 2 && node.children.Count != 0)
                             throw new InvalidNonTermLenght(node.nterm);
 
                         if (node.children.Count != 0)
                         {
-                            node.children.ForEach(Traverse);
                             rules[CurrentNonTerm].Add(new List<string>());
+                            node.children.ForEach(Traverse);
                         }
                         break;
 
@@ -164,60 +177,90 @@ namespace lab3._1.src.Grammar
                             var leaf_value = ((Leaf)node.children[0]).tok;
                             string leaf = string.Empty;
 
-                            if(leaf_value is NonTerm)
+                            if (leaf_value is NonTerm)
                             {
                                 leaf = ((NonTerm)leaf_value).nterm;
-                                if(!non_terms.Contains(leaf))
+                                if (!non_terms.Contains(leaf))
                                     throw new NoSuchNonTerminalException(leaf);
                             }
-                            else if(leaf_value is TermToken)
+                            else if (leaf_value is TermToken)
                             {
                                 leaf = ((TermToken)leaf_value).term;
                                 if (!terms.Contains(leaf))
                                     throw new NoSuchTerminalException(leaf);
                             }
+                            else if (leaf_value is KeyWordToken)
+                            {
+                                leaf = "eps";
+                            }
 
-                            rules[CurrentNonTerm][CurrentListIndex].Add("asd");
+
+                            rules[CurrentNonTerm][CurrentListIndex].Add(leaf);
                             node.children.ForEach(Traverse);
                         }
-                        else if (node.children.Count == 1)
+                        else if(node.children.Count !=0)
                         {
-
-                        }
-                        else if (node.children.Count == 0)
-                        {
-
-                        }
-                        else
                             throw new InvalidNonTermLenght(node.nterm);
+
+                        }
+
+                        break;
+
+                    default:
+                        node.children.ForEach(Traverse);
 
                         break;
                 }
+
+
             }
+
+            Traverse(tree);
         }
-    }
 
-
-
-    readonly struct Rule
-    {
-        public readonly string left;
-        public readonly List<string> right;
-
-        public Rule(string left, List<string> right)
+        public void Print()
         {
-            this.left = left;
-            this.right = right;
+            Console.WriteLine($"Аксиома грамматики: {axiom.ToString()}");
+            Console.WriteLine("Правила грамматики:");
+            foreach (var nt in rules.Keys)
+            {
+                var rule = new StringBuilder(nt);
+                rule.Append(" -> ");
+                foreach (var alt in rules[nt])
+                {
+                    foreach (var symbol in alt)
+                    {
+                        rule.Append(symbol.ToString());
+                        rule.Append(" ");
+                    }
+                    if (rules[nt].Count > 1 && rules[nt].IndexOf(alt) != rules[nt].Count - 1)
+                    {
+                        rule.Append("| ");
+                    }
+                }
+                Console.WriteLine(rule.ToString());
+            }
+
+
         }
+    
+        
     }
+
 
 
     readonly struct Axiom
     {
-        readonly string non_term = string.Empty;
+        public readonly string non_term { get; }
 
-        public Axiom(string non_term) => this.non_term = non_term;  
+        public Axiom(string non_term) => this.non_term = non_term;
 
         public bool isEmpty { get { return non_term == string.Empty; } }
+
+
+        public override string ToString()
+        {
+            return non_term;
+        }
     }
 }
