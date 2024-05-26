@@ -140,12 +140,11 @@ namespace lab3._1.src.Parser
             return sb.ToString();
         }
 
-        public void SaveToFile()
+        public void SaveToFile(string dir = "src\\Parser")
         {
             string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
-            string filePath = Path.Combine(projectDirectory, "src\\Parser\\LL1ParserTable.cs");
+            string filePath = Path.Combine(projectDirectory, $"{dir}\\LL1ParserTable.cs");
 
-            // Сохранение кода в файл
 
             var content = GenerateCSharpCode();
             File.WriteAllText(filePath, content);
