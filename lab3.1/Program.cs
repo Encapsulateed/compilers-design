@@ -1,7 +1,9 @@
 ﻿using lab2._3.src.Lexer;
 using lab2._3.src.Tokens;
 using lab2._3.src;
-using lab3._1.src.Grammar;
+
+using lab3._1.src.Gram;
+using lab3._1.src.Parser;
 
 namespace lab3._1
 {
@@ -22,52 +24,40 @@ namespace lab3._1
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
+            var tok = sc.NextToken();
+            while (tok.Tag != DomainTag.EOF)
+            {
+                var st = tok.ToString();
+
+               // Console.WriteLine(st);
+                tok = sc.NextToken();
+
+                if (tok.Tag == DomainTag.EOF)
+                {
+                  //  Console.WriteLine(tok.ToString());
+                }
+
+            }
+
+            cp = new Compiler();
+            sc = new Scanner(prg, cp);
+
             var parser = new Parser();
 
             var tree = parser.parse(sc);
-            
+
+            tree.Print("");
 
             Grammar g = new Grammar(tree);
-            g.Print();
+           // g.Print();
 
             Console.WriteLine();
+        
+            var parsingTable = new ParsingTable(g);
 
-
-
-            foreach(var nt in g.NonTerms)
-            {
-                Console.Write($"{nt}: ");
-
-                foreach (var set in g.FirsrtSets[nt])
-                {
-                    foreach (var first in set)
-                    {
-                        Console.Write(first+" ");
-                    }
-
-                }
-                Console.WriteLine();
-
-
-            }
-
-            Console.WriteLine();    
-            foreach (var nt in g.NonTerms)
-            {
-                Console.Write($"{nt}: ");
-
-                foreach (var set in g.FollowSets[nt])
-                {
-                    foreach (var first in set)
-                    {
-                        Console.Write(first + " ");
-                    }
-
-                }
-                Console.WriteLine();
-
-
-            }
+            parsingTable.SaveToFile();
+           
+            /* */
 
         }
     }

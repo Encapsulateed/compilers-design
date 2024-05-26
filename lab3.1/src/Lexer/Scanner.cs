@@ -36,7 +36,7 @@ namespace lab2._3.src.Lexer
                     case '\'':
                         word += (char)cur.Cp;
                         cur++;
-                        if (cur.isTerm)
+                        while (cur.isTerm || cur.IsDecimalDigit)
                         {
                             word += (char)cur.Cp;
                             cur++;
@@ -84,11 +84,11 @@ namespace lab2._3.src.Lexer
                         if (cur.Cp != -1)
                         {
 
-                            if (cur.isNonTerm)
+                            if (cur.isNonTerm || cur.Cp == '_')
                             {
                                 word += (char)cur.Cp;
                                 cur++;
-                                while (cur.IsDecimalDigit || cur.isNonTerm)
+                                while (cur.IsDecimalDigit || cur.isNonTerm|| cur.Cp == '_')
                                 {
                                     word += (char)cur.Cp;
                                     cur++;

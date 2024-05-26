@@ -5,12 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace lab3._1.src.Grammar
+namespace lab3._1.src.Gram
 {
     internal class Grammar
     {
@@ -20,9 +22,9 @@ namespace lab3._1.src.Grammar
         public Axiom axiom { get; private set; } = new Axiom(string.Empty);
 
         public Dictionary<string, HashSet<string>> FollowSets = new Dictionary<string, HashSet<string>>();
-        public Dictionary<string, HashSet<string>> FirsrtSets = new Dictionary<string, HashSet<string>>();
+        public Dictionary<string, HashSet<string>> FirstSets = new Dictionary<string, HashSet<string>>();
 
-        private const string EPS = "$";
+        public static readonly string EPS = "#";
 
         private string CurrentNonTerm { get; set; } = string.Empty;
         private int CurrentListIndex
@@ -143,7 +145,7 @@ namespace lab3._1.src.Grammar
                         if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term[1].ToString(); ;
+                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term.Replace("\'", "");
                         Terms.Add(new_term);
 
                         node.children.ForEach(Traverse);
@@ -192,7 +194,7 @@ namespace lab3._1.src.Grammar
                             }
                             else if (leaf_value is TermToken)
                             {
-                                leaf = ((TermToken)leaf_value).term[1].ToString();
+                                leaf = ((TermToken)leaf_value).term.Replace("\'", "");
                                 if (!Terms.Contains(leaf))
                                     throw new NoSuchTerminalException(leaf);
                             }
@@ -223,8 +225,14 @@ namespace lab3._1.src.Grammar
             }
 
             Traverse(tree);
-            FirsrtSets = CalculateFirstSets();
-            FollowSets = CalculateFollowSets();
+
+
+            FirstSets = CalculateFirstSets();
+
+
+            ComputeFollowSets();
+
+           
         }
 
         public void Print()
@@ -258,13 +266,21 @@ namespace lab3._1.src.Grammar
 
             foreach (var nonTerm in NonTerms)
             {
-                FindFirst(firstByNonTerm, nonTerm);
+                CalculateFirst(firstByNonTerm, nonTerm);
             }
 
             return firstByNonTerm;
         }
+        public HashSet<string> FindFirst(string symbol)
+        {
+            if (FirstSets.ContainsKey(symbol))
+            {
+                return FirstSets[symbol];
+            }
 
-        private HashSet<string> FindFirst(Dictionary<string, HashSet<string>> firstByNonTerm, string symbol)
+            return new HashSet<string>() { symbol };
+        }
+        private HashSet<string> CalculateFirst(Dictionary<string, HashSet<string>> firstByNonTerm, string symbol)
         {
             if (firstByNonTerm.ContainsKey(symbol) && firstByNonTerm[symbol].Count > 0)
             {
@@ -289,7 +305,7 @@ namespace lab3._1.src.Grammar
             {
                 foreach (var rightSymbol in alt)
                 {
-                    var firstOfRight = FindFirst(firstByNonTerm, rightSymbol);
+                    var firstOfRight = CalculateFirst(firstByNonTerm, rightSymbol);
 
                     foreach (var k in firstOfRight)
                     {
@@ -310,78 +326,49 @@ namespace lab3._1.src.Grammar
             return first;
         }
 
-        public Dictionary<string, HashSet<string>> CalculateFollowSets()
+        public void ComputeFollowSets()
         {
-            var firstByNonTerm = CalculateFirstSets();
-            var followByNonTerm = NonTerms.ToDictionary(nt => nt, nt => new HashSet<string>());
-
             foreach (var nonTerm in NonTerms)
             {
-                FindFollow(firstByNonTerm, followByNonTerm, nonTerm);
+                FollowSets[nonTerm] = new HashSet<string>();
             }
 
-            return followByNonTerm;
-        }
+            FollowSets[axiom.non_term].Add("$");
 
-        private HashSet<string> FindFollow(Dictionary<string, HashSet<string>> firstByNonTerm, Dictionary<string, HashSet<string>> followByNonTerm, string symbol)
-        {
-            if (followByNonTerm.ContainsKey(symbol) && followByNonTerm[symbol].Count > 0)
+            bool changed = true;
+            while (changed)
             {
-                return followByNonTerm[symbol];
-            }
+                changed = false;
 
-            var followSet = new HashSet<string>();
-
-            if (symbol == axiom.non_term)
-            {
-                followSet.Add("$");
-            }
-
-            var visited = new HashSet<string> { symbol };
-
-            foreach (var (key, rule) in Rules)
-            {
-                foreach (var alt in rule)
+                foreach (var rule in Rules)
                 {
-                    for (int i = 0; i < alt.Count; i++)
+                    string leftSide = rule.Key;
+                    List<List<string>> rightSides = rule.Value;
+
+                    foreach (var rightSide in rightSides)
                     {
-                        var rightSymbol = alt[i];
-                        if (rightSymbol == symbol && i < alt.Count - 1)
+                        for (int i = 0; i < rightSide.Count; i++)
                         {
-                            var next = alt[i + 1];
-                            var firstNext = FindFirst(firstByNonTerm, next);
-
-                            foreach (var firstSymbol in firstNext)
+                            string symbol = rightSide[i];
+                            if (NonTerms.Contains(symbol))
                             {
-                                if (firstSymbol != EPS)
+                                if (i == rightSide.Count - 1 || rightSide[i + 1] == EPS)
                                 {
-                                    followSet.Add(firstSymbol);
+                                    changed |= AddAll(FollowSets[symbol], FollowSets[leftSide]);
                                 }
-                            }
-
-                            if (firstNext.Contains(EPS))
-                            {
-                                if (!visited.Contains(key))
+                                else
                                 {
-                                    visited.Add(key);
-                                    var followOfKey = FindFollow(firstByNonTerm, followByNonTerm, key);
-                                    foreach (var followSymbol in followOfKey)
+                                    var firstBeta = First(rightSide.GetRange(i + 1, rightSide.Count - i - 1));
+                                    if (firstBeta.Contains(EPS))
                                     {
-                                        followSet.Add(followSymbol);
+                                        firstBeta.Remove(EPS);
+                                        changed |= AddAll(FollowSets[symbol], firstBeta);
+                                        changed |= AddAll(FollowSets[symbol], FollowSets[leftSide]);
                                     }
-                                }
-                            }
-                        }
-
-                        if (rightSymbol == symbol && i == alt.Count - 1)
-                        {
-                            if (!visited.Contains(key))
-                            {
-                                visited.Add(key);
-                                var followOfKey = FindFollow(firstByNonTerm, followByNonTerm, key);
-                                foreach (var followSymbol in followOfKey)
-                                {
-                                    followSet.Add(followSymbol);
+                                    else
+                                    {
+                                        changed |= AddAll(FollowSets[symbol], firstBeta);
+                                    }
                                 }
                             }
                         }
@@ -389,12 +376,39 @@ namespace lab3._1.src.Grammar
                 }
             }
 
-            followByNonTerm[symbol] = followSet;
+        }
+        private HashSet<string> First(List<string> symbols)
+        {
+            HashSet<string> firstSet = new HashSet<string>();
 
-            return followSet;
+            foreach (var symbol in symbols)
+            {
+                if (Terms.Contains(symbol))
+                {
+                    firstSet.Add(symbol);
+                    break;
+                }
+                else
+                {
+                    var firstOfSymbol = FirstSets[symbol];
+                    firstSet.UnionWith(firstOfSymbol);
+
+                    if (!firstOfSymbol.Contains(EPS))
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return firstSet;
+        }
+        private bool AddAll<T>(HashSet<T> target, HashSet<T> source)
+        {
+            int initialCount = target.Count;
+            target.UnionWith(source);
+            return target.Count > initialCount;
         }
     }
-
 
 
     readonly struct Axiom

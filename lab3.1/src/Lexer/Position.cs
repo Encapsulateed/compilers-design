@@ -67,11 +67,12 @@ namespace lab2._3.src.Lexer
         {
             get
             {
-                return (char.IsLower(Text, Index) && char.IsLetter(Text, Index)) || 
-                    Cp == '(' || 
-                    Cp == ')' || 
-                    Cp == '+' || 
-                    Cp == '*';
+                return (char.IsLower(Text, Index) && char.IsLetter(Text, Index)) ||
+                    Cp == '(' ||
+                    Cp == ')' ||
+                    Cp == '+' ||
+                    Cp == '*' ||
+                    Cp == '_';
             }
         }
 
@@ -79,7 +80,7 @@ namespace lab2._3.src.Lexer
         {
             get
             {
-                return (char.IsUpper(Text, Index) && char.IsLetter(Text, Index));
+                return (char.IsUpper(Text, Index) && char.IsLetter(Text, Index)) ;
             }
         }
         public bool IsNewLine
