@@ -3,25 +3,16 @@ import abc
 import parser_edsl as pe
 from dataclasses import dataclass
 from typing import Any
-import enum
 from pprint import pprint
 import sys
 import re
+import semantic_erors as se
+import maps as my_map
 
-class SemanticError(pe.Error):
-    def __init__(self, pos, message):
-        self.pos = pos
-        self.__message = message
 
-    @property
-    def message(self):
-        return self.__message
 
-class BaseType(enum.Enum):
-    Integer = 'INTEGER'
-    Real = 'REAL'
-    Boolean = 'BOOLEAN'
-    String = 'STRING'
+class SemanticError(pe.Error, abc.ABC):
+    pass
 
 class Type(abc.ABC):
     pass
@@ -29,15 +20,24 @@ class Type(abc.ABC):
 @dataclass 
 class Ident():
     name: str
-    name_pos: pe.Position
+    name_pos : pe.Position
+
+    @pe.ExAction
+    def create(attrs, coords, res_coord):
+        name = attrs
+
+        return Ident(name,coords[0].start)
     
 @dataclass
 class TypeIdent(Ident):
     pass
 
+
+
 @dataclass 
 class Pointer(Ident):
     pass
+
 
 @dataclass
 class ConstIdent(Ident):
@@ -55,23 +55,22 @@ class UnsignedNumber(abc.ABC):
 @dataclass 
 class UnsignedInt(UnsignedNumber):
     value: int
-    value_pos : pe.Position
+
+
+
 
 @dataclass 
 class UnsignedFloat(UnsignedNumber):
     value: float
-    value_pos : pe.Position
 
 @dataclass 
 class NumberConstant(Constant):
     ident: Ident
     value: UnsignedNumber
 
-
 @dataclass 
 class CharacterConstant(Constant):
     value: str
-    value_pos : pe.Position
 
 class Filed(abc.ABC):
     pass
@@ -80,7 +79,13 @@ class Filed(abc.ABC):
 class SimpleFiled(Filed):
     idents: list[Ident]
     type: Type
-    type_pos : pe.Position
+    
+    def check(self):
+        ids = []
+        for id in self.idents:
+            if id.name in ids:
+                raise se.RepeatedVariable(id.name_pos,id) 
+            ids.append(id.name)
 
     
 @dataclass 
@@ -93,6 +98,12 @@ class CaseField(Filed):
     ident: Ident
     type_ident: TypeIdent
     constants : list[ConstItem]
+
+    def check(self):
+        # Проверка идентификатора 
+        # проверка для каждой константы 
+        for c in self.constants:
+            c.check()
 @dataclass
 class PakedType(Type):
     pass
@@ -100,6 +111,11 @@ class PakedType(Type):
 @dataclass 
 class Record(PakedType):
     fields : list[Filed]
+    def check(self):
+        for f in self.fields:
+            f.check()
+                    
+
     
 
 @dataclass 
@@ -112,24 +128,61 @@ class ConstDef():
     value: Constant
 
 
+    def check(self):
+        id : Ident = self.ident
+        val : Constant = self.value
+
+        const_name = id.name[0]
+        const_val = None
+        if isinstance(val,UnsignedInt):
+                const_val = val.value
+        if isinstance(val,UnsignedFloat):
+                const_val = val.value
+
+        if const_name in my_map.CONSTANT_IDENTS.keys():
+            raise se.RepeatedConstant(id.name_pos,const_ident=const_name)
+        my_map.CONSTANT_IDENTS[const_name] = const_val
+
+
 @dataclass 
 class TypeDef():
     ident: Ident
     type: Type
-    type_pos:pe.Position
+    
+
+    def check(self):
+        id: Ident =self.ident
+
+        type_name = id.name[0]
+        
+        if type_name in my_map.TYPE_IDENTS.keys():
+            raise se.RepeatedType(id.name_pos,id.name[0])
+
+        my_map.TYPE_IDENTS[type_name] = 0 
+        self.type.check()
+
 @dataclass 
 class RecordBlock(Block):
     types: list[TypeDef]
-
+    def check(self):
+        for td in self.types:
+            td.check()
     
     
 @dataclass 
-class ConstantBlock:
+class ConstantBlock(Block):
     const_list: list[ConstDef]
+    def check(self):
+        for cd in self.const_list:
+            cd.check()
     
 @dataclass 
 class Program():
     blocks : list[Block]
+
+    def check(self):
+        for block in self.blocks:
+            block.check()
 
 
 @dataclass 
@@ -140,26 +193,72 @@ class SimpleType(Type):
 class Array(PakedType):
     simple_types : list[SimpleType]
     arr_type: Type
-    arr_type_pos:pe.Position
+
+
+    def check(self):
+        for st in self.simple_types:
+            if (isinstance(st,Ident)):
+                type_name = st.name[0]
+                print(type_name)
+                if not type_name in my_map.TYPE_IDENTS.keys():
+                    raise se.UndeclaredType(st.name_pos,type_name)
+            elif isinstance(st,TwoConstants):
+                st.check()
+            else :
+                self.simple_type.check()
+
+        if isinstance(self.arr_type,Ident):
+            type_name = self.arr_type.name[0]
+            if type_name not in my_map.TYPE_IDENTS.keys():
+                raise se.UndeclaredType(self.arr_type.name_pos,type_name)
+        
 
 @dataclass 
 class Set(PakedType):
     simple_type: SimpleType
-    simple_type_pos:pe.Position
+    
+    def check(self):
+        st = self.simple_type
+        if (isinstance(st,Ident)):
+            type_name = st.name[0]
+            print(type_name)
+            if not type_name in my_map.TYPE_IDENTS.keys():
+                raise se.UndeclaredType(st.name_pos,type_name)
+        elif isinstance(st,TwoConstants):
+            st.check()
+        else :
+            self.simple_type.check()
 
 @dataclass
 class File(PakedType):
     type: Type
-    type_pos:pe.Position
-    
+
 @dataclass 
 class TwoConstants(SimpleType):
     fistr: Constant
     second: Constant
 
+    def check(self):
+        st = self
+        if isinstance(st.fistr,Ident):
+            f_name = st.fistr.name[0]
+            if not f_name in my_map.CONSTANT_IDENTS.keys():
+                raise se.UndeclaredConstant(st.fistr.name_pos,f_name) 
+        if isinstance(st.second,Ident):
+            f_name = st.second.name[0]
+            if not f_name in my_map.CONSTANT_IDENTS.keys():
+                raise se.UndeclaredConstant(st.second.name_pos,f_name) 
+
 @dataclass 
 class Idents(SimpleType):
     idents: list[Ident]
+
+    def check(self):
+        idents = []
+        for id in self.idents:
+            if id.name in idents:
+                raise se.RepeatedVariable(id.name_pos,id.name[0])
+            idents.append(id.name)
 
 INTEGER = pe.Terminal('INTEGER', '[0-9]+', int, priority=7)
 REAL = pe.Terminal('REAL', '[0-9]+(\\.[0-9]*)?(e[-+]?[0-9]+)?', float)
@@ -305,7 +404,7 @@ NIdents |= NIdent, lambda id: [id]
 NIdents |= NIdents, ',' , NIdent, lambda ids, id: ids + [id]
 
 
-NConstant |= NNumberConst
+NConstant |= NNumberConst 
 NConstant |= NCharacterConst
 
 NNumberConst |= NConstIdent
@@ -319,10 +418,11 @@ NUnsignedFloat |= REAL, UnsignedFloat
 NCharacterConst |=  STRING, CharacterConstant
 
 NTwoConstants |= NConstant, '..' , NConstant, TwoConstants
-NConstIdent |= IDENT, ConstIdent
-NTypeIdent |= IDENT, TypeIdent
-NIdent |= IDENT, Ident
-NpointerIdent |= IDENT, Pointer
+NConstIdent |= IDENT, ConstIdent.create
+NTypeIdent |= IDENT, TypeIdent.create
+NIdent |= IDENT, Ident.create
+NpointerIdent |= IDENT, Pointer.create
+
 p = pe.Parser(NProgram)
 
 assert p.is_lalr_one()
@@ -330,13 +430,37 @@ assert p.is_lalr_one()
 p.add_skipped_domain('\\s')
 p.add_skipped_domain('(\\(\\*|\\{).*?(\\*\\)|\\})')
 
-for filename in sys.argv[1:]:
-    try:
-        with open(filename) as f:
-            tree = p.parse(f.read())
-            pprint(tree)
-    except pe.Error as e:
-        print(f'Ошибка {e.pos}: {e.message}')
-    except Exception as e:
-        print(e)
 
+CHECK =True
+
+if not CHECK:
+    with open('tree.txt', 'w',encoding="utf8") as f:
+        original_stdout = sys.stdout
+        try:
+            sys.stdout = f
+            for filename in sys.argv[1:]:
+                try:
+                    with open(filename) as f:
+                        tree = p.parse(f.read())
+                        pprint(tree)
+                        #tree.check()
+                except pe.Error as e:
+                    print(f'Ошибка {e.pos}: {e.message}')
+
+        finally:
+            sys.stdout = original_stdout
+else:
+    for filename in sys.argv[1:]:
+        try:
+            with open(filename) as f:
+                tree = p.parse(f.read())
+                #pprint(tree)
+                tree.check()
+        except pe.Error as e:
+            print(f'Ошибка {e.pos}: {e.message}')
+
+#print(my_map.ALL_IDENTS)
+print(my_map.TYPE_IDENTS)
+print(my_map.CONSTANT_IDENTS)
+
+#print(my_map.POINTER_IDENTS)
