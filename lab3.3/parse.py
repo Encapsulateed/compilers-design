@@ -25,7 +25,6 @@ class Ident():
     @pe.ExAction
     def create(attrs, coords, res_coord):
         name = attrs
-
         return Ident(name,coords[0].start)
     
 @dataclass
@@ -82,16 +81,39 @@ class SimpleFiled(Filed):
     
     def check(self):
         ids = []
+        
         for id in self.idents:
             if id.name in ids:
-                raise se.RepeatedVariable(id.name_pos,id) 
+                raise se.RepeatedVariable(id.name_pos,id.name[0]) 
             ids.append(id.name)
+        
+        
+        type = self.type 
+        if isinstance(type, Ident):
+            type_name = type.name[0]
+            if not type_name in my_map.TYPE_IDENTS.keys():
+                raise se.UndeclaredType(type.name_pos,type_name)
+        else:
+            self.type.check()
 
     
 @dataclass 
 class ConstItem():
     constants: list[Constant]
     fileds: list[Filed]
+
+    def check(self):
+        for c in self.constants:
+            # значит это не конкретная констан
+            # проверяем, что она определена ранее 
+            if isinstance(c,Ident):
+                const_name = c.name[0]
+                if not const_name in my_map.CONSTANT_IDENTS.keys():
+                    raise se.UndeclaredConstant(c.name_pos,const_name)
+            else:
+                c.check()
+        for f in self.fileds:
+            f.check()
 
 @dataclass
 class CaseField(Filed):
@@ -100,10 +122,15 @@ class CaseField(Filed):
     constants : list[ConstItem]
 
     def check(self):
-        # Проверка идентификатора 
-        # проверка для каждой константы 
         for c in self.constants:
             c.check()
+        
+        if self.ident.name[0]  in my_map.TYPE_IDENTS:
+            raise se.RepeatedType(self.ident.name_pos,self.ident.name[0]) 
+
+        if self.type_ident.name[0] not in my_map.TYPE_IDENTS:
+            raise se.UndeclaredType(self.type_ident.name_pos,self.type_ident.name[0]) 
+        
 @dataclass
 class PakedType(Type):
     pass
@@ -149,9 +176,16 @@ class TypeDef():
     ident: Ident
     type: Type
     
+    @pe.ExAction
+    def create(attrs, coord,res):
+        id,type = attrs
+        # значит задали перечислимый тип => надо определить константы
+
+        return TypeDef(id,type)
+        
 
     def check(self):
-        id: Ident =self.ident
+        id: Ident = self.ident
 
         type_name = id.name[0]
         
@@ -160,6 +194,19 @@ class TypeDef():
 
         my_map.TYPE_IDENTS[type_name] = 0 
         self.type.check()
+
+
+        if isinstance(self.type, Idents):
+            ident_lst = self.type.idents
+
+            for id in ident_lst:
+                if id.name[0] in my_map.CONSTANT_IDENTS.keys():
+                    raise se.RepeatedConstant(id.name_pos,id.name[0])
+        
+
+            for i in range(len(ident_lst)):
+                    my_map.CONSTANT_IDENTS[ident_lst[i].name[0]] = i
+
 
 @dataclass 
 class RecordBlock(Block):
@@ -199,7 +246,6 @@ class Array(PakedType):
         for st in self.simple_types:
             if (isinstance(st,Ident)):
                 type_name = st.name[0]
-                print(type_name)
                 if not type_name in my_map.TYPE_IDENTS.keys():
                     raise se.UndeclaredType(st.name_pos,type_name)
             elif isinstance(st,TwoConstants):
@@ -211,6 +257,8 @@ class Array(PakedType):
             type_name = self.arr_type.name[0]
             if type_name not in my_map.TYPE_IDENTS.keys():
                 raise se.UndeclaredType(self.arr_type.name_pos,type_name)
+        else:
+            self.arr_type.check()
         
 
 @dataclass 
@@ -221,7 +269,6 @@ class Set(PakedType):
         st = self.simple_type
         if (isinstance(st,Ident)):
             type_name = st.name[0]
-            print(type_name)
             if not type_name in my_map.TYPE_IDENTS.keys():
                 raise se.UndeclaredType(st.name_pos,type_name)
         elif isinstance(st,TwoConstants):
@@ -341,7 +388,7 @@ NRecordBlock |= NTypes, RecordBlock
 NConstBlock |=  NConsts, ConstantBlock
 
 
-NTypeDef |= NIdent, '=', NType, ';', TypeDef
+NTypeDef |= NIdent, '=', NType, ';', TypeDef.create
 NConstDef |= NIdent, '=', NConstant, ';' ,  ConstDef
 
 NType |= NSimpleType
@@ -431,9 +478,7 @@ p.add_skipped_domain('\\s')
 p.add_skipped_domain('(\\(\\*|\\{).*?(\\*\\)|\\})')
 
 
-CHECK =True
-
-if not CHECK:
+if True:
     with open('tree.txt', 'w',encoding="utf8") as f:
         original_stdout = sys.stdout
         try:
@@ -443,21 +488,20 @@ if not CHECK:
                     with open(filename) as f:
                         tree = p.parse(f.read())
                         pprint(tree)
-                        #tree.check()
                 except pe.Error as e:
                     print(f'Ошибка {e.pos}: {e.message}')
 
         finally:
             sys.stdout = original_stdout
-else:
-    for filename in sys.argv[1:]:
-        try:
-            with open(filename) as f:
-                tree = p.parse(f.read())
-                #pprint(tree)
-                tree.check()
-        except pe.Error as e:
-            print(f'Ошибка {e.pos}: {e.message}')
+
+for filename in sys.argv[1:]:
+    try:
+        with open(filename) as f:
+            tree = p.parse(f.read())
+            #pprint(tree)
+            tree.check()
+    except pe.Error as e:
+        print(f'Ошибка {e.pos}: {e.message}')
 
 #print(my_map.ALL_IDENTS)
 print(my_map.TYPE_IDENTS)
