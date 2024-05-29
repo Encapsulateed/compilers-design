@@ -12,32 +12,6 @@ namespace lab2._3.src
 {
     internal class Parser
     {
-        Dictionary<string, string[]> debug_table = new Dictionary<string, string[]>()
-        {
-            {"program kw_nonterminal", new string[] {"decl","rules","axioms" } },
-            {"rules kw_axiom", new string[] {} },
-            {"rules non_term", new string[] {"rule","rules" } },
-            {"axioms kw_axiom", new string[] {"axiom","axioms"} },
-            {"decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", "kw_terminal","terms","sc" } },
-            {"axiom kw_axiom", new string[] { "kw_axiom", "non_term", "sc" } },
-            {"rule non_term", new string[] { "non_term", "kw_eq","alts","sc" } },
-            {"non_terms non_term", new string[] { "non_term", "non_term_tail" } },
-            {"non_term_tail sc", new string[] { } },
-            {"non_term_tail comma", new string[] {"comma","non_terms" } },
-            {"terms term", new string[] { "term", "term_tail" } },
-            {"term_tail sc", new string[] { } },
-            {"term_tail comma", new string[] {"comma","terms" } },
-            {"alts non_term", new string[] {"symbols","alt_tail" } },
-            {"alts term", new string[] {"symbols","alt_tail" } },
-            {"alts kw_eps", new string[] {"symbols","alt_tail" } },
-            {"alt_tail or", new string[] {"or","alts" } },
-            {"alt_tail sc", new string[] {} },
-            {"symbols non_term", new string[] {"non_term", "symbols"} },
-            {"symbols term", new string[] {"term", "symbols"} },
-            {"symbols kw_eps", new string[] { "kw_eps", "symbols"} },
-            {"symbols sc", new string[] { } },
-            {"symbols or", new string[] { } }
-        };
         Dictionary<string, string[]> real_table = LL1ParserTable.Table;
         bool isTerminal(string str)
         {
@@ -84,9 +58,6 @@ namespace lab2._3.src
                     {
                         stack.Push(new StackNode() { value = go[i], node = inner });
                     }
-
-
-
                 }
                 else
                 {
