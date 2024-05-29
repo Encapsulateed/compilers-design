@@ -1,5 +1,7 @@
-ALL_IDENTS = []
 CONSTANT_IDENTS = {} # <ident: value>
-TYPE_IDENTS = {"INTEGER" : 2, "REAL" : 4, "BOOL" : 1 ,"CHAR":1, "POINTER": 4} # <ident: size>
-POINTER_IDENTS = []
+TYPE_IDENTS = {
+                "ITERABLE":2,"INTEGER" : 2, 
+                "REAL" : 4, 
+                "CHAR":1,
+                "POINTER": 4} # <ident: size>
 

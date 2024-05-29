@@ -26,6 +26,12 @@ class Ident():
     def create(attrs, coords, res_coord):
         name = attrs
         return Ident(name,coords[0].start)
+    @pe.ExAction
+    def createPointer(attrs,coords,res):
+        name = attrs
+        return Pointer(name,coords[0].start)
+    def size(self):
+        return my_map.TYPE_IDENTS[self.name[0]]
     
 @dataclass
 class TypeIdent(Ident):
@@ -35,6 +41,8 @@ class TypeIdent(Ident):
 
 @dataclass 
 class Pointer(Ident):
+    def size(self):
+        return my_map.TYPE_IDENTS["POINTER"]
     pass
 
 
@@ -79,6 +87,9 @@ class SimpleFiled(Filed):
     idents: list[Ident]
     type: Type
     
+    def size(self):
+        return self.type.size() * len(self.idents)
+    
     def check(self):
         ids = []
         
@@ -102,6 +113,11 @@ class ConstItem():
     constants: list[Constant]
     fileds: list[Filed]
 
+    def size(self) -> int:
+        fb = 0
+        for f in self.fileds:
+            fb+=f.size()
+        return fb
     def check(self):
         for c in self.constants:
             # значит это не конкретная констан
@@ -130,7 +146,9 @@ class CaseField(Filed):
 
         if self.type_ident.name[0] not in my_map.TYPE_IDENTS:
             raise se.UndeclaredType(self.type_ident.name_pos,self.type_ident.name[0]) 
-        
+    def size(self) -> int:
+        constan_bytes = list(map(lambda x: x.size(),self.constants))
+        return self.type_ident.size() + max(constan_bytes)
 @dataclass
 class PakedType(Type):
     pass
@@ -141,7 +159,11 @@ class Record(PakedType):
     def check(self):
         for f in self.fields:
             f.check()
-                    
+    def size(self) -> int:
+        bytes = 0
+        for f in self.fields:
+            bytes += f.size()
+        return bytes
 
     
 
@@ -182,7 +204,8 @@ class TypeDef():
         # значит задали перечислимый тип => надо определить константы
 
         return TypeDef(id,type)
-        
+    def size(self) -> int:
+        return self.type.size()    
 
     def check(self):
         id: Ident = self.ident
@@ -192,7 +215,7 @@ class TypeDef():
         if type_name in my_map.TYPE_IDENTS.keys():
             raise se.RepeatedType(id.name_pos,id.name[0])
 
-        my_map.TYPE_IDENTS[type_name] = 0 
+        my_map.TYPE_IDENTS[type_name] = self.size() 
         self.type.check()
 
 
@@ -241,6 +264,11 @@ class Array(PakedType):
     simple_types : list[SimpleType]
     arr_type: Type
 
+    def size(self) -> int:
+        inside_arr = self.simple_types[0]
+        if isinstance(inside_arr,TwoConstants):
+            return self.arr_type.size() * inside_arr.get_range()
+        return self.arr_type.size() + inside_arr.size()
 
     def check(self):
         for st in self.simple_types:
@@ -264,6 +292,9 @@ class Array(PakedType):
 @dataclass 
 class Set(PakedType):
     simple_type: SimpleType
+    
+    def size(self):
+        return self.simple_type.size()
     
     def check(self):
         st = self.simple_type
@@ -295,11 +326,30 @@ class TwoConstants(SimpleType):
             f_name = st.second.name[0]
             if not f_name in my_map.CONSTANT_IDENTS.keys():
                 raise se.UndeclaredConstant(st.second.name_pos,f_name) 
-
+    def size(self) -> int:
+        return my_map.TYPE_IDENTS['ITERABLE']
+    def get_range(self) -> int:
+        f = 0
+        s = 0
+        st = self
+        if isinstance(st.fistr, Ident):
+            f = my_map.CONSTANT_IDENTS[st.fistr.name[0]]
+        if isinstance(st.fistr,UnsignedInt):
+            f = st.fistr.value
+        if isinstance(st.second, Ident):
+            s = my_map.CONSTANT_IDENTS[st.second.name[0]]
+        if isinstance(st.second,UnsignedInt):
+            s = st.second.value
+        return abs(f - s ) +1
 @dataclass 
 class Idents(SimpleType):
     idents: list[Ident]
 
+    def size(self):
+        return my_map.TYPE_IDENTS['ITERABLE']
+
+            
+    
     def check(self):
         idents = []
         for id in self.idents:
@@ -468,7 +518,7 @@ NTwoConstants |= NConstant, '..' , NConstant, TwoConstants
 NConstIdent |= IDENT, ConstIdent.create
 NTypeIdent |= IDENT, TypeIdent.create
 NIdent |= IDENT, Ident.create
-NpointerIdent |= IDENT, Pointer.create
+NpointerIdent |= IDENT, Pointer.createPointer
 
 p = pe.Parser(NProgram)
 
@@ -503,8 +553,13 @@ for filename in sys.argv[1:]:
     except pe.Error as e:
         print(f'Ошибка {e.pos}: {e.message}')
 
-#print(my_map.ALL_IDENTS)
-print(my_map.TYPE_IDENTS)
-print(my_map.CONSTANT_IDENTS)
 
-#print(my_map.POINTER_IDENTS)
+for ti in my_map.CONSTANT_IDENTS.keys():
+    print(f"СONSTANT {ti} value: {my_map.CONSTANT_IDENTS[ti]}")
+
+print('######################')
+
+for ti in my_map.TYPE_IDENTS.keys():
+    print(f"TYPE {ti} size: {my_map.TYPE_IDENTS[ti]} bytes")
+
+
