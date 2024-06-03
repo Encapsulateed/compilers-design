@@ -3,62 +3,40 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using lab2._4.src.Lexer;
+using lab2._3.src.Lexer;
 
-namespace lab2._4.src.Tokens
+namespace lab2._3.src.Tokens
 {
     enum DomainTag
     {
-        IDENT,
-        TYPE_IDENT,
-        CONSTANT_IDENT,
-        POINTER_IDENT,
-        INT_CONSTANT,
-        REAL_CONSTANT,
-        STRING_CONSTANT,
-        KEYWORD,
-        SPEC_TOKEN,
-        ERROR,
-        EOF,
-
-    }
-
-    enum KeyWord
-    {
-        TYPE,
-        CASE,
-        END,
-        ARRAY,
-        FILE,
-        SET,
-        RECORD, 
-        OF,
-        CONST,
-        INTEGER,
-        REAL,
-        BOOLEAN,
-        CHAR,
-
-    }
-
-
-    enum SPEC_TOKENS
-    {
+        KW_TYPE,
+        KW_CONST,
+        KW_ARRAY,
+        KW_FILE,
+        KW_SET,
+        KW_RECORD,
+        KW_OF,
+        KW_PAKED,
+        KW_CASE,
+        KW_END,
+        EQ,
+        SC,
+        COMMA,
         LB,
         RB,
         SLB,
         SRB,
-        COMMA,
+        ARROW,
+        TWO_DOTS,
         COLON,
-        SEMICOLON,
-        OF,
-        CONST,
+        IDENT,
         INTEGER,
         REAL,
-        BOOLEAN,
-        CHAR,
-
+        INVALID,
+        EOF
     }
+
+   
 
     internal abstract class Token
     {

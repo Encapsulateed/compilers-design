@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Net;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
+using lab2._3.src.Tokens;
 using lab2._4.src.Tokens;
 
-namespace lab2._4.src.Lexer
+namespace lab2._3.src.Lexer
 {
     internal class Scanner
     {
@@ -32,59 +35,55 @@ namespace lab2._4.src.Lexer
                 var prev_cur = cur.clone();
                 switch (cur.Cp)
                 {
+                    case ':':
+                        cur++;
 
-                    case 'p':
+                        return new SpecialToken(DomainTag.COLON, prev_cur, cur.clone());
 
-                        while (cur.IsLetterOrDigit)
-                        {
-                            word += (char)cur.Cp;
-                            cur++;
-                        }
-                        if (word.ToLower() == "print")
-                        {
-                            return new KeyWordToken(DomainTag.PRINT_KEYWORD, word, prev_cur, cur.clone());
-                        }
-                        else
-                        {
+                    case ';':
+                        cur++;
 
-                            return new IdentToken(compiler.AddName(word), prev_cur, cur.clone());
-                        }
-                        break;
-                    case 'g':
-                        while (cur.IsLetterOrDigit)
-                        {
-                            word += (char)cur.Cp;
-                            cur++;
-                        }
-                        if (word.ToLower() == "goto")
-                        {
-                            return new KeyWordToken(DomainTag.GOTO_KEYWORD, word, prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.SC, prev_cur, cur.clone());
 
-                        }
-                        else if (word.ToLower() == "gosub")
-                        {
-                            return new KeyWordToken(DomainTag.GOSUB_KEYWORD, word, prev_cur, cur.clone());
+                    case ',':
+                        cur++;
 
-                        }
-                        else
-                        {
+                        return new SpecialToken(DomainTag.COMMA, prev_cur, cur.clone());
 
-                            return new IdentToken(compiler.AddName(word), prev_cur, cur.clone());
+                    case '(':
+                        cur++;
 
-                            break;
-                        }
-                    case '&':
-                        // пропускаем & H
+                        return new SpecialToken(DomainTag.LB, prev_cur, cur.clone());
+
+                    case ')':
+                        cur++;
+
+                        return new SpecialToken(DomainTag.RB, prev_cur, cur.clone());
+
+                    case '[':
+                        cur++;
+
+                        return new SpecialToken(DomainTag.SLB, prev_cur, cur.clone());
+
+                    case ']':
+                        cur++;
+
+                        return new SpecialToken(DomainTag.SRB, prev_cur, cur.clone());
+
+                    case '^':
+                        cur++;
+
+                        return new SpecialToken(DomainTag.ARROW, prev_cur, cur.clone());
+
+                    case '.':
                         cur++;
                         cur++;
-                        do
-                        {
-                            word += (char)cur.Cp;
-                            cur++;
 
-                        } while (cur.IsLetterOrDigit);
+                        return new SpecialToken(DomainTag.TWO_DOTS, prev_cur, cur.clone());
+                    case '=':
+                        cur++;
 
-                        return new NumberToken(Convert.ToInt64(word.ToUpper(), 16), prev_cur, cur.clone());
+                        return new SpecialToken(DomainTag.EQ, prev_cur, cur.clone());
                     default:
                         if (cur.IsLetter)
                         {
@@ -94,50 +93,63 @@ namespace lab2._4.src.Lexer
                                 cur++;
                             } while (cur.IsLetterOrDigit);
 
+                            switch (word.ToLower())
+                            {
+                                case "type":
+                                    return new KeyWordToken(DomainTag.KW_TYPE, prev_cur, cur.clone());
+                                case "array":
+                                    return new KeyWordToken(DomainTag.KW_ARRAY, prev_cur, cur.clone());
+                                case "set":
+                                    return new KeyWordToken(DomainTag.KW_SET, prev_cur, cur.clone());
+                                case "file":
+                                    return new KeyWordToken(DomainTag.KW_FILE, prev_cur, cur.clone());
+                                case "const":
+                                    return new KeyWordToken(DomainTag.KW_CONST, prev_cur, cur.clone());
+                                case "record":
+                                    return new KeyWordToken(DomainTag.KW_RECORD, prev_cur, cur.clone());
+                                case "of":
+                                    return new KeyWordToken(DomainTag.KW_OF, prev_cur, cur.clone());
+                                case "paked":
+                                    return new KeyWordToken(DomainTag.KW_PAKED, prev_cur, cur.clone());
+                                case "case":
+                                    return new KeyWordToken(DomainTag.KW_CASE, prev_cur, cur.clone());
+                                case "end":
+                                    return new KeyWordToken(DomainTag.KW_END, prev_cur, cur.clone());
 
+                                default:
+                                    return new IdentToken(word, prev_cur, cur.clone());
 
-                            return new IdentToken(compiler.AddName(word), prev_cur, cur.clone());
+                            }
+
 
                         }
+
                         else if (cur.IsDecimalDigit)
                         {
-                            int val = cur.Cp - '0';
-                            //пропускаем первую букву
+                            double val = cur.Cp - '0';
                             cur++;
-                            try
-                            {
-                                while (cur.IsDecimalDigit)
-                                {
-                                    val = checked(val * 10 + cur.Cp - '0');
-                                    cur++;
 
-                                }
-                            }
-                            catch (OverflowException)
+                            while (cur.IsDecimalDigit)
                             {
-                                compiler.AddMessage(true, prev_cur, "константа слишком большая");
-                                while (cur.IsDecimalDigit) cur++;
-                            }
-
-                            if (cur.IsLetter)
-                            {
-                                compiler.AddMessage(true, prev_cur, "нужен разделитель");
+                                val = checked(val * 10 + cur.Cp - '0');
+                                cur++;
 
                             }
 
-                            return new NumberToken(val, prev_cur, cur.clone());
+                            return new NumberToken(DomainTag.INTEGER, val, prev_cur, cur.clone());
                         }
                         else
                         {
-                            while (cur.Cp is not '\n' && cur.Cp is not ' ' && cur.Cp is not -1)
-                                cur++;
+                            return new InvalidToken(prev_cur, cur.clone());
+
                         }
-                        break;
+
+
                 }
                 cur++;
             }
 
-            return new EOFToken("", cur, cur);
+            return new EOFToken(cur, cur);
         }
 
 

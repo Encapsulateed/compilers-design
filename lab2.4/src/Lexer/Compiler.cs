@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace lab2._4.src.Lexer
+namespace lab2._3.src.Lexer
 {
     internal class Compiler
     {

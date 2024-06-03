@@ -8,17 +8,14 @@ using System.Threading.Tasks;
 
 namespace lab2._4.src.Tokens
 {
-    internal class IdentToken : Token
+    internal class InvalidToken : Token
     {
-        public string Name;
-        public IdentToken(string name, Position statring, Position following) : base(DomainTag.IDENT, statring, following)
+        public InvalidToken(Position statring, Position following) : base(DomainTag.INVALID, statring, following)
         {
-            Name = name;
         }
-
         public override string ToString()
         {
-            return $"{Tag} {Coords} {Name}";
+            return $"{Tag} {Coords}";
         }
     }
 }

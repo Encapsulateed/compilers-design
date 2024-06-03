@@ -1,4 +1,5 @@
-﻿using lab2._4.src.Lexer;
+﻿using lab2._3.src.Lexer;
+using lab2._3.src.Tokens;
 using lab2._4.src.Tokens;
 
 namespace lab2._4
@@ -19,17 +20,14 @@ namespace lab2._4
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
-            //Console.WriteLine(prg);
+            Console.WriteLine(prg);
 
 
             var tok = sc.NextToken();
             while (tok.Tag != DomainTag.EOF)
             {
                 var st = tok.ToString();
-                if (tok.Tag == DomainTag.IDENT)
-                {
-                    st += $" IDENT NAME: {cp.GetName(((IdentToken)tok).Code)}";
-                }
+
                 Console.WriteLine(st);
                 tok = sc.NextToken();
 
@@ -39,6 +37,8 @@ namespace lab2._4
                 }
 
             }
+
+
             Console.WriteLine();
             cp.OutPutMessages();
         }

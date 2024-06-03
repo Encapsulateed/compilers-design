@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace lab2._4.src.Lexer
+namespace lab2._3.src.Lexer
 {
     internal class Position : IComparable<Position>
     {
@@ -18,7 +18,7 @@ namespace lab2._4.src.Lexer
         {
             get
             {
-                return Index == Text.Length ? -1 : char.ConvertToUtf32(Text.ToLower(), Index);
+                return Index == Text.Length ? -1 : char.ConvertToUtf32(Text, Index);
             }
             private set { }
         }
@@ -63,6 +63,26 @@ namespace lab2._4.src.Lexer
             }
             private set { }
         }
+        public bool isTerm
+        {
+            get
+            {
+                return (char.IsLower(Text, Index) && char.IsLetter(Text, Index)) ||
+                    Cp == '(' ||
+                    Cp == ')' ||
+                    Cp == '+' ||
+                    Cp == '*' ||
+                    Cp == '_';
+            }
+        }
+
+        public bool isNonTerm
+        {
+            get
+            {
+                return (char.IsUpper(Text, Index) && char.IsLetter(Text, Index)) ;
+            }
+        }
         public bool IsNewLine
         {
             get
@@ -89,7 +109,7 @@ namespace lab2._4.src.Lexer
         {
             return Index.CompareTo(other?.Index);
         }
-
+      
         public override string ToString()
         {
             return $"({Line},{Pos})";
