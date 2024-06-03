@@ -123,7 +123,6 @@ namespace lab2._3.src.Lexer
 
 
                         }
-
                         else if (cur.IsDecimalDigit)
                         {
                             double val = cur.Cp - '0';
@@ -140,13 +139,13 @@ namespace lab2._3.src.Lexer
                         }
                         else
                         {
+                            cur++;
                             return new InvalidToken(prev_cur, cur.clone());
 
                         }
 
 
                 }
-                cur++;
             }
 
             return new EOFToken(cur, cur);
