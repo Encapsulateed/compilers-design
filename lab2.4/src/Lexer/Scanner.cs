@@ -137,14 +137,9 @@ namespace lab2._3.src.Lexer
 
                             return new NumberToken(DomainTag.INTEGER, val, prev_cur, cur.clone());
                         }
-                        else
-                        {
-                            cur++;
-                            return new InvalidToken(prev_cur, cur.clone());
-
-                        }
 
 
+                        break;
                 }
             }
 

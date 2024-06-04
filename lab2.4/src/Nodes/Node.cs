@@ -1,42 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Reflection.Metadata.BlobBuilder;
 
 namespace lab2._4.src.Nodes
 {
     public interface INode
     {
-
         void Print(string indent);
     }
 
-    class Program : INode
+    public class Program : INode
     {
         public List<Block> blocks;
 
         public Program(List<Block> blocks) => this.blocks = blocks;
         public void Print(string indent)
         {
-            Console.Write(indent + "Prograrm( ");
+            Console.WriteLine($"{indent}Program");
             foreach (var b in blocks)
             {
-                b.Print(indent + '\t');
+                b.Print(indent + "\t");
             }
-            Console.WriteLine(")");
         }
     }
-    abstract class Block : INode
+
+    public abstract class Block : INode
     {
         public virtual void Print(string indent)
         {
         }
     }
 
-    class TypeBlock : Block, INode
+    public class TypeBlock : Block, INode
     {
         public List<TypeDef> typeDefs;
 
@@ -47,15 +41,15 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            Console.Write(indent + "TypeDef( ");
+            Console.WriteLine($"{indent}TypeBlock");
             foreach (var td in typeDefs)
             {
-                td.Print(indent + '\t');
+                td.Print(indent + "\t");
             }
-            Console.WriteLine(")");
         }
     }
-    class ConstBlock : Block, INode
+
+    public class ConstBlock : Block, INode
     {
         public List<ConstDef> constDefs;
 
@@ -66,21 +60,20 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            Console.Write(indent + "ConstDef( ");
+            Console.WriteLine($"{indent}ConstBlock");
             foreach (var td in constDefs)
             {
-                td.Print(indent + '\t');
+                td.Print(indent + "\t");
             }
-            Console.WriteLine(")");
         }
     }
 
-    class TypeDef : INode
+    public class TypeDef : INode
     {
-        Ident id;
+        TypeIdent id;
         Type type;
 
-        public TypeDef(Ident id, Type type)
+        public TypeDef(TypeIdent id, Type type)
         {
             this.id = id;
             this.type = type;
@@ -88,17 +81,18 @@ namespace lab2._4.src.Nodes
 
         public void Print(string indent)
         {
-            id.Print(indent);
-            type.Print(indent);
+            Console.WriteLine($"{indent}TypeDef");
+            id.Print(indent + "\t");
+            type.Print(indent + "\t");
         }
     }
 
-    class ConstDef : INode
+    public class ConstDef : INode
     {
-        Ident id;
+        ConstantIdent id;
         Constant constant;
 
-        public ConstDef(Ident id, Constant constant)
+        public ConstDef(ConstantIdent id, Constant constant)
         {
             this.id = id;
             this.constant = constant;
@@ -106,63 +100,83 @@ namespace lab2._4.src.Nodes
 
         public void Print(string indent)
         {
-            id.Print(indent);
-            constant.Print(indent);
+            Console.WriteLine($"{indent}ConstDef");
+            id.Print(indent + "\t");
+            constant.Print(indent + "\t");
         }
 
     }
 
-    class Ident : INode
+    public class Ident : INode
     {
         string id;
         public Ident(string id) { this.id = id; }
         public void Print(string indent)
         {
-            Console.WriteLine(indent + $"Ident(${id})");
+            Console.WriteLine($"{indent}Ident: {id}");
         }
     }
 
 
-    abstract class Constant : INode
+    public class TypeIdent : SimpleType, INode
+    {
+        string id;
+        public TypeIdent(string id) { this.id = id; }
+        public override void Print(string indent)
+        {
+            Console.WriteLine($"{indent}TypeIdent: {id}");
+        }
+    }
+
+    public abstract class Constant : INode
     {
         public virtual void Print(string indent)
         {
         }
     }
-    abstract class Type : INode
+    public abstract class Type : INode
     {
         public virtual void Print(string indent)
         {
         }
     }
-    abstract class SimpleType : Type, INode
+    public class PointerIdent : Type, INode
+    {
+        string id;
+        public PointerIdent(string id) { this.id = id; }
+        public override void Print(string indent)
+        {
+            Console.WriteLine($"{indent}PointerIdent({id})");
+        }
+    }
+    public abstract class SimpleType : Type, INode
     {
         public override void Print(string indent)
         {
         }
     }
 
-    class Idents : SimpleType, INode 
+    public class Idents : SimpleType, INode
     {
         public List<Ident> idents;
 
-        public Idents (List<Ident> idents)
+        public Idents(List<Ident> idents)
         {
             this.idents = idents;
         }
         public override void Print(string indent)
         {
-            foreach(var id in idents)
+            foreach (var id in idents)
             {
-                id.Print(indent + "\t");
+                id.Print(indent + "");
             }
         }
     }
 
-     class TwoConstants : SimpleType, INode
+    public class TwoConstants : SimpleType, INode
     {
         public Constant first;
-        public Constant secod; 
+        public Constant secod;
 
         public TwoConstants(Constant first, Constant secod)
         {
@@ -170,14 +184,14 @@ namespace lab2._4.src.Nodes
             this.secod = secod;
         }
 
-        public override void Print(string indent) 
-        { 
-            first.Print(indent + "\t");
-            secod.Print(indent + "\t");
+        public override void Print(string indent)
+        {
+            first.Print(indent + "");
+            secod.Print(indent + "");
         }
     }
 
-    class Array : Type, INode
+    public class Array : Type, INode
     {
         public Type Type;
         public List<SimpleType> simpleTypes;
@@ -187,18 +201,18 @@ namespace lab2._4.src.Nodes
             Type = type;
             this.simpleTypes = simpleTypes;
         }
-        public override void Print(string indent) 
-        { 
-            Type.Print(indent+'\t');
-            foreach(var st in simpleTypes)
+        public override void Print(string indent)
+        {
+            Type.Print(indent + "");
+            foreach (var st in simpleTypes)
             {
-                st.Print(indent + '\t');
+                st.Print(indent + "");
             }
         }
     }
 
 
-    class Set : Type, INode
+    public class Set : Type, INode
     {
         public SimpleType simpleType;
         public Set(SimpleType simpleType)
@@ -208,12 +222,12 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            simpleType.Print(indent + '\t');
-
+            Console.WriteLine($"{indent}Set");
+            simpleType.Print(indent + "\t");
         }
     }
 
-    class Record : Type, INode
+    public class Record : Type, INode
     {
         List<Field> fields;
 
@@ -224,23 +238,24 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            foreach(var f in fields)
+            Console.WriteLine($"{indent}Record");
+            foreach (var f in fields)
             {
                 f.Print(indent + "\t");
             }
         }
     }
 
-    abstract class Field : INode
+    abstract public class Field : INode
     {
         public virtual void Print(string indent)
         {
         }
     }
 
-    class SimpleFiled : Field, INode
+    public class SimpleFiled : Field, INode
     {
-        List<Ident> idents; 
+        List<Ident> idents;
         Type Type;
 
         public SimpleFiled(List<Ident> idents, Type type)
@@ -251,6 +266,7 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
+            Console.WriteLine($"{indent}SimpleField");
             foreach (var ident in idents)
             {
                 ident.Print(indent + "\t");
@@ -259,13 +275,13 @@ namespace lab2._4.src.Nodes
         }
     }
 
-    class CaseFiled : Field, INode 
+    public class CaseFiled : Field, INode
     {
-        Type ident;
-        Type type_ident;
+        Ident ident;
+        Ident type_ident;
         List<ConstantItem> constantItems;
 
-        public CaseFiled(Type ident, Type type_ident, List<ConstantItem> constantItems)
+        public CaseFiled(Ident ident, Ident type_ident, List<ConstantItem> constantItems)
         {
             this.ident = ident;
             this.type_ident = type_ident;
@@ -274,17 +290,18 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            ident.Print(indent+"\t");
+            Console.WriteLine($"{indent}CaseField");
+            ident.Print(indent + "\t");
             type_ident.Print(indent + "\t");
 
-            foreach(var constant in constantItems)
+            foreach (var constant in constantItems)
             {
                 constant.Print(indent + "\t");
             }
         }
     }
 
-    class ConstantItem : INode
+    public class ConstantItem : INode
     {
         public List<Constant> constants;
         public List<Field> fields;
@@ -297,6 +314,7 @@ namespace lab2._4.src.Nodes
 
         public void Print(string indent)
         {
+            Console.WriteLine($"{indent}ConstantItem");
             foreach (var c in constants)
             {
                 c.Print(indent + "\t");
@@ -308,24 +326,23 @@ namespace lab2._4.src.Nodes
         }
     }
 
-    class UnsignedNumber : Constant, INode
+    public class UnsignedNumber : Constant, INode
     {
         double val;
         public UnsignedNumber(double val) { this.val = val; }
         public override void Print(string indent)
         {
-            Console.WriteLine(indent + $"Unsigned_Number(${val})");
+            Console.WriteLine($"{indent}Unsigned_Number: {val}");
         }
     }
 
-    class ConstantIdent : Constant, INode
+    public class ConstantIdent : Constant, INode
     {
         string id;
         public ConstantIdent(string id) { this.id = id; }
         public override void Print(string indent)
         {
-            Console.WriteLine(indent + $"Constant_Ident(${id})");
+            Console.WriteLine($"{indent}Constant_Ident : {id}");
         }
     }
-
 }

@@ -1,4 +1,5 @@
 ﻿using lab2._3.src.Lexer;
+using lab2._3.src.Parser;
 using lab2._3.src.Tokens;
 using lab2._4.src.Tokens;
 
@@ -20,7 +21,6 @@ namespace lab2._4
             var cp = new Compiler();
             var sc = new Scanner(prg, cp);
 
-            Console.WriteLine(prg);
 
 
             var tok = sc.NextToken();
@@ -28,7 +28,7 @@ namespace lab2._4
             {
                 var st = tok.ToString();
 
-                Console.WriteLine(st);
+                //Console.WriteLine(st);
                 tok = sc.NextToken();
 
                 if (tok.Tag == DomainTag.EOF)
@@ -37,6 +37,17 @@ namespace lab2._4
                 }
 
             }
+
+             cp = new Compiler();
+             sc = new Scanner(prg, cp);
+
+            Parser parser = new Parser(sc);
+
+            // Step 3: Parse the input to get the syntax tree
+            lab2._4.src.Nodes.Program syntaxTree = parser.Parse();
+
+            // Step 4: Print the syntax tree
+            syntaxTree.Print("");
 
 
             Console.WriteLine();

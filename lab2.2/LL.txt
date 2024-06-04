@@ -1,45 +1,29 @@
 program -> blocks .
                                             
-blocks -> block block_tail.
-block_tail -> blocks .
-block_tail -> .
+blocks -> block block_tail .
+block_tail -> blocks | .
 
-block -> TYPE record_block .
-block -> CONST const_block  .
+block -> TYPE types | CONST consts .
          
-record_block -> types .
-
-const_block -> consts .
-
-constas -> constant_def constas_tail .
-constas_tail -> constas .
-constas_tail -> .
+consts -> constant_def constas_tail .
+constas_tail -> constas | .
 
 types -> type_def types_tail .
-types_tail -> types .
-types_tail ->  .
+types_tail -> types | .
 
 constant_def -> ident '=' constant ';' .
 
-type -> simple_type .
-type -> '^' type_ident .
-type ->  paked_type .
-type ->  pakable .
+type_def -> ident '=' type ';' .
 
-paked_type -> PAKED pakable .
+type -> simple_type | '^' type_ident | pakable | PAKED pakable .
 
-pakable ->  array .
-pakable ->  file .
-pakable ->  set .
-pakable ->  record .
+pakable ->  array | file | set | record .
 
 array -> ARRAY '[' simple_types ']' OF type .
 
 simple_types -> simple_type simple_types_tail .
 
-simple_types_tail -> ',' simple_types .
-
-simple_types_tail  -> .
+simple_types_tail -> ',' simple_types | .
 
 file -> FILE OF type .
 
@@ -47,53 +31,37 @@ set -> SET OF simple_type .
 
 record ->  RECORD fields END .
 
-simple_type -> type_ident .
-simple_type -> '(' idents ')' .
-simple_type -> two_constants .  
-                   
+simple_type -> type_ident | '(' idents ')' | two_constants .
+
 two_constants -> constant '..' constant .
 
 fields -> field fileds_tail .
 
-fileds_tail -> fields .
-
-fileds_tail -> .
+fileds_tail -> fields | .
 
 
 field -> idents ':' type ';' .
 field -> CASE ident ':' type_ident OF constant_items .
 
 constant_items -> const_item constant_items_tail .
-constant_items_tail -> ';' const_items .
-constant_items_tail ->  .
+constant_items_tail -> ';' const_items | .
 
 const_item ->  constants ':' '(' fields ')' .
 
 constants -> constant constants_tail . 
-constants_tail -> ',' constants . 
-constants_tail -> .
+constants_tail -> ',' constants | . 
 
-constant -> number_constant .
-constant -> character_constant .
+constant -> number_constant | character_constant .
 
 
-number_constant -> constant_ident .
-number_constant -> unsigned_number .
-
+number_constant -> constant_ident | unsigned_number .
 
 character_constant -> STRING .
 
-unsigned_number -> unsigned_int  .
-unsigned_number -> unsigned_float .
-
-             
-unsigned_float -> REAL .
-
-unsigned_int  -> INTEGER . 
+unsigned_number -> INTEGER | REAL .
 
 
 idents -> ident idents_tail .
-idents_tail -> ',' idents .
-idents_tail -> .
+idents_tail -> ',' idents | .
 
                    
