@@ -42,10 +42,8 @@ OR : '|'
 Грамматика языка:
 ```
 # объявления
-non-terminal PROGRAM, DECL, RULES, AXIOM, RULE, NON_TERMS,NON_TERM_TAIL,TERMS,TERM_TAIL,
-ALTS,ALT_TAIL,SYMBOLS;
-terminal 'kw_nonterminal', 'kw_terminal','kw_eq','kw_eps','kw_axiom','sc','comma','non_term', 
-'term','or';
+non-terminal PROGRAM, DECL, RULES, AXIOM, RULE, NON_TERMS,NON_TERM_TAIL,TERMS,TERM_TAIL,ALTS,ALT_TAIL,SYMBOLS;
+terminal 'kw_nonterminal', 'kw_terminal','kw_eq','kw_eps','kw_axiom','sc','comma','non_term', 'term','or';
 
 # правила грамматики
 PROGRAM ::= DECL RULES AXIOM;
@@ -241,14 +239,11 @@ namespace lab3._1.src.Gram
     {
         public HashSet<string> Terms { get; private set; } = new HashSet<string>();
         public HashSet<string> NonTerms { get; private set; } = new HashSet<string>();
-        public Dictionary<string, List<List<string>>> Rules { get; private set; } = 
-        new Dictionary<string, List<List<string>>>();
+        public Dictionary<string, List<List<string>>> Rules { get; private set; } = new Dictionary<string, List<List<string>>>();
         public Axiom axiom { get; private set; } = new Axiom(string.Empty);
 
-        public Dictionary<string, HashSet<string>> FollowSets = 
-        new Dictionary<string, HashSet<string>>();
-        public Dictionary<string, HashSet<string>> FirstSets = 
-        new Dictionary<string, HashSet<string>>();
+        public Dictionary<string, HashSet<string>> FollowSets = new Dictionary<string, HashSet<string>>();
+        public Dictionary<string, HashSet<string>> FirstSets = new Dictionary<string, HashSet<string>>();
 
         public static readonly string EPS = "#";
 
@@ -371,8 +366,7 @@ namespace lab3._1.src.Gram
                         if (node.children.Count != 2)
                             throw new InvalidNonTermLenght(node.nterm);
 
-                        var new_term = 
-                        ((TermToken)((Leaf)node.children[0]).tok).term.Replace("\'", "");
+                        var new_term = ((TermToken)((Leaf)node.children[0]).tok).term.Replace("\'", "");
                         Terms.Add(new_term);
 
                         node.children.ForEach(Traverse);
@@ -507,8 +501,7 @@ namespace lab3._1.src.Gram
 
             return new HashSet<string>() { symbol };
         }
-        private HashSet<string> CalculateFirst(Dictionary<string, HashSet<string>> firstByNonTerm,
-         string symbol)
+        private HashSet<string> CalculateFirst(Dictionary<string, HashSet<string>> firstByNonTerm, string symbol)
         {
             if (firstByNonTerm.ContainsKey(symbol) && firstByNonTerm[symbol].Count > 0)
             {
@@ -586,14 +579,12 @@ namespace lab3._1.src.Gram
                                 }
                                 else
                                 {
-                                    var firstBeta = First(rightSide.GetRange(i + 1, 
-                                    rightSide.Count - i - 1));
+                                    var firstBeta = First(rightSide.GetRange(i + 1, rightSide.Count - i - 1));
                                     if (firstBeta.Contains(EPS))
                                     {
                                         firstBeta.Remove(EPS);
                                         changed |= AddAll(FollowSets[symbol], firstBeta);
-                                        changed |= AddAll(FollowSets[symbol],
-                                         FollowSets[leftSide]);
+                                        changed |= AddAll(FollowSets[symbol], FollowSets[leftSide]);
                                     }
                                     else
                                     {
@@ -806,8 +797,7 @@ namespace lab2._3.src.Lexer
         {
             get
             {
-                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned
-                 : char.GetUnicodeCategory(Text, Index);
+                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned : char.GetUnicodeCategory(Text, Index);
             }
             private set { }
         }
@@ -1050,17 +1040,13 @@ namespace lab2._3.src.Lexer
                                     switch (word)
                                     {
                                         case "terminal":
-                                            return new KeyWordToken(DomainTag.KW_TERMINAL, word,
-                                             prev_cur, cur.clone());
+                                            return new KeyWordToken(DomainTag.KW_TERMINAL, word, prev_cur, cur.clone());
                                         case "non-terminal":
-                                            return new KeyWordToken(DomainTag.KW_NONTERMINAL, word,
-                                             prev_cur, cur.clone());
+                                            return new KeyWordToken(DomainTag.KW_NONTERMINAL, word, prev_cur, cur.clone());
                                         case "axiom":
-                                            return new KeyWordToken(DomainTag.KW_AXIOM, word,
-                                             prev_cur, cur.clone());
+                                            return new KeyWordToken(DomainTag.KW_AXIOM, word, prev_cur, cur.clone());
                                         case "epsilon":
-                                            return new KeyWordToken(DomainTag.KW_EPS, word,
-                                             prev_cur, cur.clone());
+                                            return new KeyWordToken(DomainTag.KW_EPS, word, prev_cur, cur.clone());
 
                                     }
                                 }
@@ -1094,8 +1080,7 @@ namespace  lab3._1.src.GeneratedParser
         public static readonly Dictionary<string, string[]> Table = new Dictionary<string, string[]>()
         {
             { "program kw_nonterminal", new string[] { "decl", "rules", "axiom" } },
-            { "decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", 
-            "kw_terminal", "terms", "sc" } },
+            { "decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", "kw_terminal", "terms", "sc" } },
             { "rules non_term", new string[] { "rule", "rules" } },
             { "rules kw_axiom", new string[] { } },
             { "axiom kw_axiom", new string[] { "kw_axiom", "non_term", "sc" } },
@@ -1243,8 +1228,7 @@ namespace lab2._3.src
             {"rules kw_axiom", new string[] {} },
             {"rules non_term", new string[] {"rule","rules" } },
             {"axioms kw_axiom", new string[] {"axiom","axioms"} },
-            {"decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", 
-            "sc", "kw_terminal","terms","sc" } },
+            {"decl kw_nonterminal", new string[] { "kw_nonterminal", "non_terms", "sc", "kw_terminal","terms","sc" } },
             {"axiom kw_axiom", new string[] { "kw_axiom", "non_term", "sc" } },
             {"rule non_term", new string[] { "non_term", "kw_eq","alts","sc" } },
             {"non_terms non_term", new string[] { "non_term", "non_term_tail" } },
@@ -1431,9 +1415,7 @@ namespace lab3._1.src.Parser
             sb.AppendLine("{");
             sb.AppendLine("    public class LL1ParserTable");
             sb.AppendLine("    {");
-            sb.AppendLine(
-"        public static readonly Dictionary<string, string[]> Table = new Dictionary<string, 
-string[]>()");
+            sb.AppendLine("        public static readonly Dictionary<string, string[]> Table = new Dictionary<string, string[]>()");
             sb.AppendLine("        {");
 
             foreach (var entry in Table)
@@ -1448,21 +1430,17 @@ string[]>()");
                 else
                 {
                     string valuesString = string.Join("\", \"", values);
-                    sb.AppendLine
-                    ($"            {{ \"{key}\", new string[] {{ \"{valuesString.
-                    ToLower()}\" }} }},");
+                    sb.AppendLine($"            {{ \"{key}\", new string[] {{ \"{valuesString.ToLower()}\" }} }},");
                 }
             }
 
             sb.AppendLine("        };");
             sb.AppendLine();
 
-            sb.AppendLine($"        public static readonly string axiom = \"
-            {_grammar.axiom.non_term.ToLower()}\";");
+            sb.AppendLine($"        public static readonly string axiom = \"{_grammar.axiom.non_term.ToLower()}\";");
             sb.AppendLine();
 
-            sb.AppendLine("        public static readonly HashSet<string> NonTerms 
-            = new HashSet<string>()");
+            sb.AppendLine("        public static readonly HashSet<string> NonTerms = new HashSet<string>()");
             sb.AppendLine("        {");
 
             foreach (var nonTerm in _grammar.NonTerms)
@@ -1479,8 +1457,7 @@ string[]>()");
 
         public void SaveToFile(string dir = "src\\Parser")
         {
-            string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).
-            Parent.Parent.FullName;
+            string projectDirectory = Directory.GetParent(Directory.GetCurrentDirectory()).Parent.Parent.FullName;
             string filePath = Path.Combine(projectDirectory, $"{dir}\\LL1ParserTable.cs");
 
 
@@ -1515,8 +1492,7 @@ namespace lab2._3.src.Tokens
     {
         public readonly string value;
 
-        public EOFToken(string value, Position statring, Position following)
-         : base(DomainTag.EOF, statring, following)
+        public EOFToken(string value, Position statring, Position following) : base(DomainTag.EOF, statring, following)
         {
             this.value = value;
         }
@@ -1546,11 +1522,9 @@ namespace lab2._3.src.Tokens
     {
         public readonly string keyword;
 
-        public KeyWordToken(DomainTag tag, string value, Position starting, Position following)
-         : base(tag, starting, following)
+        public KeyWordToken(DomainTag tag, string value, Position starting, Position following) : base(tag, starting, following)
         {
-            Debug.Assert(tag == DomainTag.KW_NONTERMINAL || tag == DomainTag.KW_EPS 
-            || tag == DomainTag.KW_AXIOM || tag == DomainTag.KW_TERMINAL||tag == DomainTag.KW_EQ);
+            Debug.Assert(tag == DomainTag.KW_NONTERMINAL || tag == DomainTag.KW_EPS || tag == DomainTag.KW_AXIOM || tag == DomainTag.KW_TERMINAL||tag == DomainTag.KW_EQ);
             keyword = value;
         }
 
@@ -1578,8 +1552,7 @@ namespace lab2._3.src.Tokens
     internal class NonTerm : Token
     {
         public readonly string nterm;
-        public NonTerm(string nterm, Position statring, Position following)
-         : base(DomainTag.NON_TERM, statring, following)
+        public NonTerm(string nterm, Position statring, Position following) : base(DomainTag.NON_TERM, statring, following)
         {
             this.nterm = nterm;
         }
@@ -1610,11 +1583,9 @@ namespace lab2._3.src.Tokens
     {
         public readonly string sym;
 
-        public SpecialToken(DomainTag tag, string val, Position starting, Position following)
-         : base(tag, starting, following)
+        public SpecialToken(DomainTag tag, string val, Position starting, Position following) : base(tag, starting, following)
         {
-            Debug.Assert(tag == DomainTag.SC || tag == DomainTag.NL || tag == DomainTag.COMMA
-             || tag == DomainTag.OR);
+            Debug.Assert(tag == DomainTag.SC || tag == DomainTag.NL || tag == DomainTag.COMMA || tag == DomainTag.OR);
             sym = val;
         }
 
@@ -1642,8 +1613,7 @@ namespace lab2._3.src.Tokens
     internal class TermToken : Token
     {
         public readonly string term;
-        public TermToken(string term, Position statring, Position following)
-         : base(DomainTag.TERM, statring, following)
+        public TermToken(string term, Position statring, Position following) : base(DomainTag.TERM, statring, following)
         {
             this.term = term;
         }
@@ -1709,1051 +1679,20 @@ namespace lab2._3.src.Tokens
 
 Программа калькулятора
 
-Файл Program.cs
-```csharp
-using calculator.src;
-using lab2._3.src;
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System.Linq.Expressions;
-
-namespace calculator
-{
-    internal class Program
-    {
-        static void Main(string[] args)
-        {
-            var lines = File.ReadAllLines("input.txt");
-            string prg = "";
-
-            foreach (var line in lines)
-            {
-                prg += line + '\n';
-            }
-
-
-            var cp = new Compiler();
-            var sc = new Scanner(prg, cp);
-
-            var tok = sc.NextToken();
-            while (tok.Tag != DomainTag.EOF)
-            {
-                var st = tok.ToString();
-
-                Console.WriteLine(st);
-                tok = sc.NextToken();
-
-                if (tok.Tag == DomainTag.EOF)
-                {
-                    Console.WriteLine(tok.ToString());
-                }
-
-            }
-
-            cp = new Compiler();
-            sc = new Scanner(prg, cp);
-            var parser = new Parser();
-
-            var tree = parser.parse(sc);
-
-            tree.Print("");
-
-            var ev = new ExpresionEvaluator();
-
-
-            int res = ev.EvaluateTree(tree);
-            Console.WriteLine(res);
-        }
-    }
-}
-```
-
-Файл Compiler.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src.Lexer
-{
-    internal class Compiler
-    {
-        private SortedList<Position, Message> messages;
-        private Dictionary<string, int> nameCodes;
-        private List<string> names;
-
-        public Compiler()
-        {
-            messages = new SortedList<Position, Message>();
-            nameCodes = new Dictionary<string, int>();
-            names = new List<string>();
-
-        }
-
-        public int AddName(string name)
-        {
-            if (nameCodes.ContainsKey(name))
-                return nameCodes[name];
-
-            int code = names.Count;
-            names.Add(name);
-            nameCodes[name] = code;
-            return code;
-
-        }
-        public string GetName(int code)
-        {
-            return names[code];
-        }
-
-        public void AddMessage(bool isErr, Position c, string text)
-        {
-            messages[c] = new Message(isErr, text);
-        }
-
-        public void OutPutMessages()
-        {
-            foreach (var p in messages)
-            {
-                Console.Write(p.Value.IsErorr ? "Erorr " : "Warning ");
-                Console.WriteLine($"{p.Key} {p.Value.Text}");
-
-            }
-        }
-        public Scanner GetScaner(string program)
-        {
-            return new Scanner(program, this);
-        }
-    }
-}
-
-```
-
-Файл Fragment.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src.Lexer
-{
-    internal class Fragment
-    {
-        public readonly Position Starting, Following;
-
-        public Fragment(Position starting, Position following)
-        {
-            Starting = starting;
-            Following = following;
-        }
-        public override string ToString()
-        {
-            return $"{Starting}-{Following}";
-        }
-    }
-}
-
-```
-
-Файл Message.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src.Lexer
-{
-    internal class Message
-    {
-        public readonly bool IsErorr;
-        public readonly string Text;
-
-
-        public Message(bool isErorr, string text)
-        {
-            IsErorr = isErorr;
-            Text = text;
-        }
-    }
-}
-
-```
-
-Файл Position.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src.Lexer
-{
-    internal class Position : IComparable<Position>
-    {
-        public string Text { get; private set; }
-        public int Index { get; private set; }
-        public int Pos { get; private set; }
-        public int Line { get; private set; }
-
-        public int Cp
-        {
-            get
-            {
-                return Index == Text.Length ? -1 : char.ConvertToUtf32(Text, Index);
-            }
-            private set { }
-        }
-
-        public UnicodeCategory Uc
-        {
-            get
-            {
-                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned 
-                : char.GetUnicodeCategory(Text, Index);
-            }
-            private set { }
-        }
-        public bool IsWhiteSpace
-        {
-            get
-            {
-                return Index != Text.Length && char.IsWhiteSpace(Text, Index);
-            }
-            private set { }
-        }
-        public bool IsLetter
-        {
-            get
-            {
-                return Index != Text.Length && char.IsLetter(Text, Index);
-            }
-            private set { }
-        }
-        public bool IsLetterOrDigit
-        {
-            get
-            {
-                return Index != Text.Length && char.IsLetterOrDigit(Text, Index);
-            }
-            private set { }
-        }
-        public bool IsDecimalDigit
-        {
-            get
-            {
-                return Index != Text.Length && Text[Index] >= '0' && Text[Index] <= '9';
-            }
-            private set { }
-        }
-        public bool isTerm
-        {
-            get
-            {
-                return (char.IsLower(Text, Index) && char.IsLetter(Text, Index)) ||
-                    Cp == '(' ||
-                    Cp == ')' ||
-                    Cp == '+' ||
-                    Cp == '*' ||
-                    Cp == '_';
-            }
-        }
-
-        public bool isNonTerm
-        {
-            get
-            {
-                return (char.IsUpper(Text, Index) && char.IsLetter(Text, Index)) ;
-            }
-        }
-        public bool IsNewLine
-        {
-            get
-            {
-                if (Index == Text.Length)
-                    return true;
-
-                if (Text[Index] == '\r' && Index + 1 < Text.Length)
-                    return Text[Index + 1] == '\n';
-
-                return Text[Index] == '\n';
-            }
-            private set { }
-        }
-
-        public Position(string text)
-        {
-            Text = text;
-            Line = Pos = 1;
-            Index = 0;
-        }
-
-        public int CompareTo(Position? other)
-        {
-            return Index.CompareTo(other?.Index);
-        }
-      
-        public override string ToString()
-        {
-            return $"({Line},{Pos})";
-        }
-
-        public static Position operator ++(Position p)
-        {
-            if (p.Index < p.Text.Length)
-            {
-                if (p.IsNewLine)
-                {
-                    if (p.Text[p.Index] == '\r')
-                        p.Index++;
-                    p.Line++;
-                    p.Pos = 1;
-                }
-                else
-                {
-                    if (char.IsHighSurrogate(p.Text[p.Index]))
-                        p.Index++;
-                    p.Pos++;
-
-
-                }
-                p.Index++;
-            }
-            return p;
-        }
-
-        public Position clone()
-        {
-            var pp = new Position(Text);
-            pp.Line = Line;
-            pp.Pos = Pos;
-            pp.Index = Index;
-
-            return pp;
-        }
-    }
-}
-```
-
-Файл Scanner.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Threading.Tasks;
-using calculator.src.Tokens;
-using lab2._3.src.Tokens;
-
-namespace lab2._3.src.Lexer
-{
-    internal class Scanner
-    {
-        private Compiler compiler;
-        private Position cur;
-        public List<Fragment> Comments { get; private set; }
-
-        public Scanner(string program, Compiler compiler)
-        {
-            this.compiler = compiler;
-            cur = new Position(program);
-            Comments = new List<Fragment>();
-        }
-
-        public Token NextToken()
-        {
-            while (cur.Cp != -1)
-            {
-                string word = "";
-
-                while (cur.IsWhiteSpace)
-                    cur++;
-                var prev_cur = cur.clone();
-                switch (cur.Cp)
-                {
-                    case '+':
-                        cur++;
-                        return new TokenPlus(prev_cur, cur.clone());
-                    case '*':
-                        cur++;
-                        return new TokenMul(prev_cur, cur.clone());
-                    case '(':
-                        cur++;
-                        return new LeftBracketToken(prev_cur, cur.clone());
-                    case ')':
-                        cur++;
-                        return new RightBracketToken(prev_cur, cur.clone());
-                    default:
-                        if (cur.IsDecimalDigit)
-                        {
-                            word += (char)cur.Cp;
-                            cur++;
-
-                            while (cur.IsDecimalDigit)
-                            {
-                                word += (char)cur.Cp;
-                                cur++;
-                            }
-                            int val = Convert.ToInt32(word);
-
-                            return new NumberToken(val, prev_cur, cur.clone());
-                        }
-                        break;
-
-                }
-                cur++;
-            }
-
-            return new EOFToken(cur, cur);
-        }
-
-
-    }
-}
-
-```
-
-Файл LL1ParserTable.cs
-```csharp
-using System;
-using System.Collections.Generic;
-
-namespace calculator.src.Parser
-{
-    public class LL1ParserTable
-    {
-        public static readonly Dictionary<string, string[]> Table 
-        = new Dictionary<string, string[]>()
-        {
-            { "e n", new string[] { "t", "e1" } },
-            { "e (", new string[] { "t", "e1" } },
-            { "e1 +", new string[] { "+", "t", "e1" } },
-            { "e1 $", new string[] { } },
-            { "e1 )", new string[] { } },
-            { "t n", new string[] { "f", "t1" } },
-            { "t (", new string[] { "f", "t1" } },
-            { "t1 *", new string[] { "*", "f", "t1" } },
-            { "t1 +", new string[] { } },
-            { "t1 $", new string[] { } },
-            { "t1 )", new string[] { } },
-            { "f n", new string[] { "n" } },
-            { "f (", new string[] { "(", "e", ")" } },
-        };
-
-        public static readonly string axiom = "e";
-
-        public static readonly HashSet<string> NonTerms = new HashSet<string>()
-        {
-            "e",
-            "e1",
-            "t",
-            "t1",
-            "f",
-        };
-    }
-}
-
-```
-
-Файл Node.cs
-```csharp
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src
-{
-    public interface INode
-    {
-
-        void Print(string indent);
-    }
-
-    struct StackNode { 
-       public InnerNode node;
-       public string value;
-
-
-    }
-
-    class InnerNode : INode
-    {
-        public string nterm { get; private set; }
-        public List<INode> children { get; private set; }
-
-        public InnerNode(string nterm)
-        {
-            this.nterm = nterm;
-            children = new List<INode>();
-        }
-
-        public void Print(string indent)
-        {
-            Console.WriteLine($"{indent} Внутренний узел: {nterm}");
-            foreach (var child in children)
-            {
-                child.Print(indent + "\t");
-            }
-        }
-
-        public void AddChild(INode child)
-        {
-            children.Add(child);
-        }
-    }
-
-    class Leaf : INode
-    {
-        public Token tok { get; private set; }
-
-        public Leaf(Token tok)
-        {
-            this.tok = tok;
-        }
-
-        public void Print(string indent)
-        {
-            
-
-            Console.WriteLine($"{indent}Лист:  {tok.Tag} ");
-
-        }
-    }
-
-}
-
-
-```
-
-Файл Parser.cs
-```csharp
-using calculator.src.Parser;
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab2._3.src
-{
-    internal class Parser
-    {
-        Dictionary<string, string[]> real_table = LL1ParserTable.Table;
-        bool isTerminal(string str)
-        {
-            return !(LL1ParserTable.NonTerms.Contains(str));
-        }
-
-        public INode parse(Scanner sc)
-        {
-
-            var stack = new Stack<StackNode>();
-
-            InnerNode start = new InnerNode("");
-
-            stack.Push(new StackNode() { value = LL1ParserTable.axiom, node = start });
-
-
-            Token tok = sc.NextToken();
-
-            while (tok.Tag != DomainTag.EOF )
-            {
-                var top = stack.Pop();
-
-                var lexer_tag = Token.tag_to_str[tok.Tag];
-
-                if (isTerminal(top.value))
-                {
-                    top.node.AddChild(new Leaf(tok));
-
-                    tok = sc.NextToken();
-                }
-                else if (real_table.Keys.Contains($"{top.value} {lexer_tag}"))
-                {
-                    var inner = new InnerNode(top.value);
-                    top.node.AddChild(inner);
-
-                    lexer_tag = Token.tag_to_str[tok.Tag];
-
-
-                    var go = real_table[$"{top.value} {lexer_tag}"];
-
-
-
-                    for (int i = go.Length - 1; i >= 0; i--)
-                    {
-                        stack.Push(new StackNode() { value = go[i], node = inner });
-                    }
-                }
-                else
-                {
-                    throw new Exception($"Invalid Tokens {top.value} {lexer_tag}");
-                }
-            }
-
-            return start;
-        }
-    }
-
-}
-```
-
-Файл EOFToken.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using lab2._3.src.Lexer;
-
-namespace lab2._3.src.Tokens
-{
-    internal class EOFToken : Token
-    {
-
-        public EOFToken( Position statring, Position following)
-         : base(DomainTag.EOF, statring, following)
-        {
-            
-        }
-        public override string ToString()
-        {
-            return $"{Tag} {Coords}";
-        }
-    }
-}
-
-```
-
-Файл LeftBraketToken.cs
-```csharp
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src.Tokens
-{
-    internal class LeftBracketToken : Token
-    {
-        string val = "(";
-
-        public LeftBracketToken(Position statring, Position following) 
-        : base(DomainTag.LB, statring, following)
-        {
-        }
-        public override string ToString()
-        {
-            return $"{Tag} {Coords} {val}";
-        }
-    }
-}
-```
-
-Файл RightBraketToken.cs
-```csharp
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src.Tokens
-{
-    internal class RightBracketToken : Token
-    {
-        string val = ")";
-
-        public RightBracketToken( Position statring, Position following)
-         : base(DomainTag.RB, statring, following)
-        {
-        }
-        public override string ToString()
-        {
-            return $"{Tag} {Coords} {val}";
-        }
-    }
-}
-
-```
-
-Файл NumberToken.cs
-```csharp
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src.Tokens
-{
-    internal class NumberToken : Token
-    {
-        public int value;
-        public NumberToken( int value,Position statring, Position following)
-         : base(DomainTag.NUMBER, statring, following)
-        {
-            this.value = value; 
-        }
-
-        public override string ToString()
-        {
-            return $"{Tag} {Coords} {value}";
-        }
-    }
-}
-
-```
-
-Файл TokenMul.cs
-```csharp
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src.Tokens
-{
-    internal class TokenMul : Token
-    {
-        string val = "*";
-
-        public TokenMul(Position statring, Position following) 
-        : base(DomainTag.MUL, statring, following)
-        {
-
-        }
-        public override string ToString()
-        {
-            return $"{Tag} {Coords} {val}";
-        }
-    }
-}
-
-```
-
-Файл TokenPlus.cs
-```csharp
-using lab2._3.src.Lexer;
-using lab2._3.src.Tokens;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src.Tokens
-{
-    internal class TokenPlus : Token
-    {
-        string val = "+";
-
-        public TokenPlus(Position statring, Position following)
-         : base(DomainTag.PLUS, statring, following)
-        {
-        }
-        public override string ToString()
-        {
-            return $"{Tag} {Coords} {val}";
-        }
-    }
-}
-
-```
-
-Файл Token.cs
-```csharp
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using lab2._3.src.Lexer;
-
-namespace lab2._3.src.Tokens
-{
-    enum DomainTag
-    {
-        NUMBER,
-        PLUS,
-        MUL,
-        LB,
-        RB,
-        EOF
-    }
-
-    
-
-    internal abstract class Token
-    {
-        public readonly DomainTag Tag;
-        public readonly Fragment Coords;
-
-        protected Token(DomainTag tag, Position statring, Position following)
-        {
-            Tag = tag;
-            Coords = new Fragment(statring, following);
-        }
-
-        public static Dictionary<DomainTag,string> tag_to_str  
-        = new Dictionary<DomainTag, string>() 
-        {
-            {DomainTag.NUMBER, "n" },
-            {DomainTag.PLUS, "+" },
-            {DomainTag.MUL, "*" },
-            {DomainTag.LB, "(" },
-            {DomainTag.RB, ")" },
-            {DomainTag.EOF, "$" },
-        };
-    }
-}
-
-```
-
-Файл Exeptions.cs
-```csharp
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace lab3._1.src.Exeptions
-{
-    public class TooManyAxiomException : Exception
-    {
-        static string _message = "Указано более одной аксиомы грамматики!";
-        public TooManyAxiomException() : base(_message) { }
-    }
-
-    public class InvalidNonTermLenght : Exception
-    {
-        static string _message = "Накорректная длина: ";
-
-        public InvalidNonTermLenght(string nt) : base(_message + nt ) { }
-    }
-
-    public class InvalidTree : Exception
-    {
-        static string _message = "Некорректное дерево, в ноде: ";
-        public InvalidTree(string nt) : base(_message + nt) { }
-
-    }
-
-
-    public class NoAxiomException : Exception
-    {
-        static string _message = "Отсутсвует аксиома грамматики!";
-
-        public NoAxiomException() : base(_message) { }
-    }
-
-    public class RepetedNonTerminalException : Exception
-    {
-        static string _message = "Повторный нетерменал грамматики: ";
-
-        public RepetedNonTerminalException(string nt) : base(_message + nt) { }
-    }
-
-    public class RepetedTerminalException : Exception
-    {
-        static string _message = "Повторный терменал грамматики: ";
-
-        public RepetedTerminalException(string t) : base(_message + t) { }
-    }
-
-    public class NoSuchNonTerminalException : Exception
-    {
-        static string _message = "Нетерменал не был объявлен: ";
-
-        public NoSuchNonTerminalException(string nt) : base(_message + nt) { }
-    }
-
-    public class NoSuchTerminalException : Exception
-    {
-        static string _message = "Терменал не был объявлен: ";
-
-        public NoSuchTerminalException(string t) : base(_message + t) { }
-    }
-
-    public class GrammarNotLLException : Exception
-    {
-        static string _message = "Грамматика не относится на классу LL(1)!";
-
-        public GrammarNotLLException() : base(_message) { }
-    }
-}
-
-```
-
-Файл ExpressionEvaluator.cs
-```csharp
-using calculator.src.Tokens;
-using lab2._3.src;
-using lab3._1.src.Exeptions;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace calculator.src
-{
-    internal class ExpresionEvaluator
-    {
-        public  int EvaluateTree(INode tree)
-        {
-            int Traverse(INode tree)
-            {
-                if (tree is not InnerNode)
-                {
-                    int v = ((NumberToken)((Leaf)tree).tok).value;
-                    return v;
-                }
-                else
-                {
-                    var node = ((InnerNode)tree);
-                    switch (node.nterm)
-                    {
-                        case "e":
-                            if (node.children.Count == 2)
-                            {
-                                var left = Traverse(node.children[0]);
-                                var right = Traverse(node.children[1]);
-
-                                return left + right;
-                            }
-                            else if (node.children.Count == 1)
-                            {
-                                return Traverse(node.children[0]);
-                            }
-
-                            throw new InvalidNonTermLenght(node.nterm);
-
-
-                        case "e1":
-                            if (node.children.Count == 3)
-                            {
-                                var left = Traverse(node.children[1]);
-                                var right = Traverse(node.children[2]);
-                                return left + right;
-                            }
-                            else if (node.children.Count == 2)
-                            {
-                                return Traverse(node.children[1]);
-                            }
-                            if(node.children.Count != 0)
-                            {
-                                throw new InvalidNonTermLenght(node.nterm);
-
-                            }
-                            break;
-
-                        case "t":
-                            if (node.children.Count == 2)
-                            {
-                                var left = Traverse(node.children[0]);
-                                var right = Traverse(node.children[1]);
-
-                                return left * right;
-                            }
-                            else if (node.children.Count == 1)
-                            {
-                                return Traverse(node.children[0]);
-                            }
-                            throw new InvalidNonTermLenght(node.nterm);
-
-                        case "t1":
-                            if (node.children.Count == 3)
-                            {
-                                var left = Traverse(node.children[1]);
-                                var right = Traverse(node.children[2]);
-                                return left * right;
-                            }
-                            else if (node.children.Count == 2)
-                            {
-                                return Traverse(node.children[1]);
-                            }
-                            else if (node.children.Count == 0)
-                            {
-                                return 1;
-                            }
-                            throw new InvalidNonTermLenght(node.nterm);
-
-
-                        case "f":
-                            if (node.children.Count == 3)
-                            {
-                                return Traverse(node.children[1]);
-                            }
-                            else if (node.children.Count == 1)
-                            {
-                                return Traverse(node.children[0]);
-
-                            }
-                            throw new InvalidNonTermLenght(node.nterm);
-                        case "":
-                            return Traverse(node.children[0]);
-                        default:
-                            return 0;
-                    }
-                }
-
-
-                return 0;
-            }
-            int res = Traverse(tree); ;
-
-            return res;
-        }
-
-    }
-}
-
-```
 
 # Тестирование
 
 Входные данные
 
 ```
-2+2+8+8*(1+1+1+1+1+1+(2*2))
+…
 ```
 
 Вывод на `stdout`
 
 ```
-92
+…
 ```
 
 # Вывод
-В данной работе, научился генерировать LL(1) таблицы разбора
-и применять их для разработки парсеров по LL(1) грамматикам
+‹пишете, чему научились›

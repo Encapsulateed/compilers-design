@@ -29,12 +29,12 @@ namespace lab3._1
             {
                 var st = tok.ToString();
 
-               // Console.WriteLine(st);
+                Console.WriteLine(st);
                 tok = sc.NextToken();
 
                 if (tok.Tag == DomainTag.EOF)
                 {
-                  //  Console.WriteLine(tok.ToString());
+                    Console.WriteLine(tok.ToString());
                 }
 
             }
@@ -49,13 +49,13 @@ namespace lab3._1
             tree.Print("");
 
             Grammar g = new Grammar(tree);
-           // g.Print();
+            g.Print();
 
             Console.WriteLine();
         
             var parsingTable = new ParsingTable(g);
 
-            parsingTable.SaveToFile();
+         //   parsingTable.SaveToFile();
            
             /* */
 

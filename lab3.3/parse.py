@@ -31,7 +31,10 @@ class Ident():
         name = attrs
         return Pointer(name,coords[0].start)
     def size(self):
+        if not self.name[0] in my_map.TYPE_IDENTS.keys():
+            return 0
         return my_map.TYPE_IDENTS[self.name[0]]
+
     
 @dataclass
 class TypeIdent(Ident):

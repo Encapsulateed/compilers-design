@@ -1,5 +1,5 @@
 Type
-  Coords = Record x, y: INTEGER end;
+  Coords = Record x,y: ABC end;
 Const
   MaxPoints = 100;
 type

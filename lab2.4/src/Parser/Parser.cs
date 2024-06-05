@@ -51,7 +51,9 @@ namespace lab2._3.src.Parser
             }
             throw new Exception($"Parse error: {message} at {currentToken.Coords}");
         }
-
+        /*
+            program -> (block)+    
+        */
         public Program Parse()
         {
             var blocks = new List<Block>();
@@ -61,6 +63,11 @@ namespace lab2._3.src.Parser
             }
             return new Program(blocks);
         }
+        /*
+            block -> type_block | const_block   
+
+            
+        */
 
         private Block ParseBlock()
         {
@@ -74,7 +81,7 @@ namespace lab2._3.src.Parser
             }
             throw new Exception("Expected type or const block");
         }
-
+        // type_block -> KW_TYPE (type_def)+
         private TypeBlock ParseTypeBlock()
         {
             var typeDefs = new List<TypeDef>();
@@ -84,7 +91,7 @@ namespace lab2._3.src.Parser
             }
             return new TypeBlock(typeDefs);
         }
-
+        // const_block -> KW_CONST (const_def)+
         private ConstBlock ParseConstBlock()
         {
             var constDefs = new List<ConstDef>();
@@ -95,6 +102,7 @@ namespace lab2._3.src.Parser
             return new ConstBlock(constDefs);
         }
 
+        // type_def -> ident KW_EQ type SC
         private TypeDef ParseTypeDef()
         {
             var ident = new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
@@ -103,7 +111,7 @@ namespace lab2._3.src.Parser
             Consume(DomainTag.SC, "Expected ';'");
             return new TypeDef(ident, type);
         }
-
+        // const_def -> ident KW_EQ constant SC
         private ConstDef ParseConstDef()
         {
             var ident = new ConstantIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
@@ -113,6 +121,7 @@ namespace lab2._3.src.Parser
             return new ConstDef(ident, constant);
         }
 
+        // type -> simple_type | ARROW ident | array | record | set
         private lab2._4.src.Nodes.Type ParseType()
         {
             if (Match(DomainTag.ARROW))
@@ -134,6 +143,7 @@ namespace lab2._3.src.Parser
             return ParseSimpleType();
         }
 
+        // array -> KW_ARRAY SLB (simple_type,)* simple_type SRB KW_OF type 
         private lab2._4.src.Nodes.Array ParseArrayType()
         {
             Consume(DomainTag.SLB, "Expected '['");
@@ -148,12 +158,16 @@ namespace lab2._3.src.Parser
             return new lab2._4.src.Nodes.Array(type, simpleTypes);
         }
 
+        // set -> KW_SET KW_OF type 
+
         private Set ParseSetType()
         {
             Consume(DomainTag.KW_OF, "Expected 'OF'");
             var simpleType = ParseSimpleType();
             return new Set(simpleType);
         }
+
+        // record -> KW_RECORD (field)+ KW_END 
 
         private Record ParseRecordType()
         {
@@ -170,6 +184,8 @@ namespace lab2._3.src.Parser
             Consume(DomainTag.KW_END, "Expected 'end'");
             return new Record(fields);
         }
+
+        //set -> ident | LB idents RB | two_constants
 
         private SimpleType ParseSimpleType()
         {
@@ -190,6 +206,7 @@ namespace lab2._3.src.Parser
             return ParseTwoConstants();
         }
 
+        // two_constants -> constant TWO_DOTS constant
         private TwoConstants ParseTwoConstants()
         {
             var first = ParseConstant();
@@ -198,6 +215,7 @@ namespace lab2._3.src.Parser
             return new TwoConstants(first, second);
         }
 
+        // field -> simple_field | case_field
         private Field ParseField()
         {
             if (Match(DomainTag.KW_CASE))
@@ -206,6 +224,8 @@ namespace lab2._3.src.Parser
             }
             return ParseSimpleField();
         }
+
+        // simple_field -> idents COLON type SC 
 
         private SimpleFiled ParseSimpleField()
         {
@@ -223,6 +243,8 @@ namespace lab2._3.src.Parser
 
             return new SimpleFiled(idents, type);
         }
+
+        // simple_field -> KW_CASE ident COLON ident OF constant_item (;constant_item)* 
 
         private CaseFiled ParseCaseField()
         {
@@ -243,6 +265,8 @@ namespace lab2._3.src.Parser
             }
             return new CaseFiled(ident, typeIdent, constantItems);
         }
+
+        // constant_item -> constant (,constant)* COLON LB (filed)+ RB
 
         private ConstantItem ParseConstantItem()
         {
@@ -266,6 +290,9 @@ namespace lab2._3.src.Parser
 
             return new ConstantItem(constants, fields);
         }
+
+        // constant -> number_constant
+        // number_constant -> INTEGER
 
         private Constant ParseConstant()
         {
