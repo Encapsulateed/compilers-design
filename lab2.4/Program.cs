@@ -22,36 +22,11 @@ namespace lab2._4
             var sc = new Scanner(prg, cp);
 
 
-
-            var tok = sc.NextToken();
-            while (tok.Tag != DomainTag.EOF)
-            {
-                var st = tok.ToString();
-
-                //Console.WriteLine(st);
-                tok = sc.NextToken();
-
-                if (tok.Tag == DomainTag.EOF)
-                {
-                    Console.WriteLine(tok.ToString());
-                }
-
-            }
-
-             cp = new Compiler();
-             sc = new Scanner(prg, cp);
-
             Parser parser = new Parser(sc);
 
-            // Step 3: Parse the input to get the syntax tree
             lab2._4.src.Nodes.Program syntaxTree = parser.Parse();
 
-            // Step 4: Print the syntax tree
             syntaxTree.Print("");
-
-
-            Console.WriteLine();
-            cp.OutPutMessages();
         }
     }
 }

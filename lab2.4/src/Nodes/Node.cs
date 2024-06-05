@@ -166,9 +166,11 @@ namespace lab2._4.src.Nodes
         }
         public override void Print(string indent)
         {
+            Console.WriteLine($"{indent}Idents");
+
             foreach (var id in idents)
             {
-                id.Print(indent + "");
+                id.Print(indent + "\t");
             }
         }
     }
@@ -186,8 +188,9 @@ namespace lab2._4.src.Nodes
 
         public override void Print(string indent)
         {
-            first.Print(indent + "");
-            secod.Print(indent + "");
+            Console.WriteLine($"{indent}Two Constants");
+            first.Print(indent + "\t");
+            secod.Print(indent + "\t");
         }
     }
 
@@ -203,11 +206,14 @@ namespace lab2._4.src.Nodes
         }
         public override void Print(string indent)
         {
-            Type.Print(indent + "");
+            Console.WriteLine($"{indent}array");
+
             foreach (var st in simpleTypes)
             {
                 st.Print(indent + "");
             }
+            Type.Print(indent + "");
+
         }
     }
 
