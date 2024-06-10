@@ -71,7 +71,51 @@ IDENT = '[A-Za-z][A-Za-z0-9]*'
 …
 
 ## Грамматика языка
-…
+```
+program -> (block)+ .
+                                            
+block -> TYPE record_block .
+block -> CONST const_block  .
+         
+record_block -> (type_def)+ .
+
+const_block -> (constant_def)+ .
+
+constant_def -> ident '=' constant ';' .
+
+type_def -> ident '=' type ';'
+
+type -> simple_type | '^' type_ident |  array | file | set | record .
+
+array -> ARRAY '[' (simple_type)+ ']' OF type .
+file -> FILE OF type .
+set -> SET OF simple_type .
+record ->  RECORD (filed)+ END .
+
+simple_type -> type_ident | '(' (ident)+ ')' | two_constants.
+     
+two_constants ->  constant '..' constant
+
+field -> (ident)+ ':' type  (';')?  .
+field -> CASE ident ':' type_ident OF (const_item)+ .
+
+
+const_item ->  (constant)+ ':' '(' (filed)+ ')' .
+
+
+constant -> number_constant | character_constant.
+
+number_constant -> constant_ident | unsigned_number.
+
+unsigned_number -> unsigned_int | unsigned_float.
+
+
+character_constant -> STRING .
+unsigned_float -> REAL .
+unsigned_int  -> INTEGER . 
+ident -> IDENT
+```
+                   
 
 ## Программная реализация
 Файл Complier.cs
@@ -222,7 +266,8 @@ namespace lab2._3.src.Lexer
         {
             get
             {
-                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned : char.GetUnicodeCategory(Text, Index);
+                return Index == Text.Length ? UnicodeCategory.OtherNotAssigned :
+                 char.GetUnicodeCategory(Text, Index);
             }
             private set { }
         }
@@ -448,25 +493,35 @@ namespace lab2._3.src.Lexer
                             switch (word.ToLower())
                             {
                                 case "type":
-                                    return new KeyWordToken(DomainTag.KW_TYPE, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_TYPE, prev_cur, 
+                                    cur.clone());
                                 case "array":
-                                    return new KeyWordToken(DomainTag.KW_ARRAY, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_ARRAY, prev_cur,
+                                     cur.clone());
                                 case "set":
-                                    return new KeyWordToken(DomainTag.KW_SET, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_SET, prev_cur,
+                                     cur.clone());
                                 case "file":
-                                    return new KeyWordToken(DomainTag.KW_FILE, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_FILE, prev_cur,
+                                     cur.clone());
                                 case "const":
-                                    return new KeyWordToken(DomainTag.KW_CONST, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_CONST, prev_cur,
+                                     cur.clone());
                                 case "record":
-                                    return new KeyWordToken(DomainTag.KW_RECORD, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_RECORD, prev_cur,
+                                     cur.clone());
                                 case "of":
-                                    return new KeyWordToken(DomainTag.KW_OF, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_OF, prev_cur,
+                                     cur.clone());
                                 case "paked":
-                                    return new KeyWordToken(DomainTag.KW_PAKED, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_PAKED, prev_cur,
+                                     cur.clone());
                                 case "case":
-                                    return new KeyWordToken(DomainTag.KW_CASE, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_CASE, prev_cur,
+                                     cur.clone());
                                 case "end":
-                                    return new KeyWordToken(DomainTag.KW_END, prev_cur, cur.clone());
+                                    return new KeyWordToken(DomainTag.KW_END, prev_cur,
+                                     cur.clone());
 
                                 default:
                                     return new IdentToken(word, prev_cur, cur.clone());
@@ -952,7 +1007,8 @@ namespace lab2._3.src.Parser
         private TypeBlock ParseTypeBlock()
         {
             var typeDefs = new List<TypeDef>();
-            while (!Check(DomainTag.KW_TYPE) && !Check(DomainTag.KW_CONST) && currentToken.Tag != DomainTag.EOF)
+            while (!Check(DomainTag.KW_TYPE) && !Check(DomainTag.KW_CONST) && 
+            currentToken.Tag != DomainTag.EOF)
             {
                 typeDefs.Add(ParseTypeDef());
             }
@@ -962,7 +1018,8 @@ namespace lab2._3.src.Parser
         private ConstBlock ParseConstBlock()
         {
             var constDefs = new List<ConstDef>();
-            while (!Check(DomainTag.KW_CONST) && !Check(DomainTag.KW_TYPE) && currentToken.Tag != DomainTag.EOF)
+            while (!Check(DomainTag.KW_CONST) && !Check(DomainTag.KW_TYPE) && 
+            currentToken.Tag != DomainTag.EOF)
             {
                 constDefs.Add(ParseConstDef());
             }
@@ -972,7 +1029,8 @@ namespace lab2._3.src.Parser
         // type_def -> ident KW_EQ type SC
         private TypeDef ParseTypeDef()
         {
-            var ident = new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+            var ident = new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name);
             Consume(DomainTag.EQ, "Expected '='");
             var type = ParseType();
             Consume(DomainTag.SC, "Expected ';'");
@@ -981,7 +1039,8 @@ namespace lab2._3.src.Parser
         // const_def -> ident KW_EQ constant SC
         private ConstDef ParseConstDef()
         {
-            var ident = new ConstantIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+            var ident = new ConstantIdent(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name);
             Consume(DomainTag.EQ, "Expected '='");
             var constant = ParseConstant();
             Consume(DomainTag.SC, "Expected ';'");
@@ -993,7 +1052,8 @@ namespace lab2._3.src.Parser
         {
             if (Match(DomainTag.ARROW))
             {
-                return new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+                return new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, 
+                "Expected identifier")).Name);
             }
             else if (Match(DomainTag.KW_ARRAY))
             {
@@ -1058,14 +1118,17 @@ namespace lab2._3.src.Parser
         {
             if (currentToken.Tag == DomainTag.IDENT)
             {
-                return new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+                return new TypeIdent(((IdentToken)Consume(DomainTag.IDENT, 
+                "Expected identifier")).Name);
             }
             else if (Match(DomainTag.LB))
             {
-                var idents = new List<Ident> { new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name) };
+                var idents = new List<Ident> { new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+                "Expected identifier")).Name) };
                 while (Match(DomainTag.COMMA))
                 {
-                    idents.Add(new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name));
+                    idents.Add(new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+                    "Expected identifier")).Name));
                 }
                 Consume(DomainTag.RB, "Expected ')'");
                 return new Idents(idents);
@@ -1097,10 +1160,12 @@ namespace lab2._3.src.Parser
         private SimpleFiled ParseSimpleField()
         {
 
-            var idents = new List<Ident> { new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name) };
+            var idents = new List<Ident> { new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name) };
             while (Match(DomainTag.COMMA))
             {
-                idents.Add(new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name));
+                idents.Add(new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+                "Expected identifier")).Name));
             }
             Consume(DomainTag.COLON, "Expected ':'");
             var type = ParseType();
@@ -1115,11 +1180,13 @@ namespace lab2._3.src.Parser
 
         private CaseFiled ParseCaseField()
         {
-            var ident = new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+            var ident = new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name);
 
             Consume(DomainTag.COLON, "Expected ':'");
 
-            var typeIdent = new Ident(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+            var typeIdent = new Ident(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name);
 
             Consume(DomainTag.KW_OF, "Expected 'of'");
 
@@ -1165,9 +1232,11 @@ namespace lab2._3.src.Parser
         {
             if (currentToken.Tag == DomainTag.INTEGER)
             {
-                return new UnsignedNumber(((NumberToken)Consume(DomainTag.INTEGER, "Expected integer")).Value);
+                return new UnsignedNumber(((NumberToken)Consume(DomainTag.INTEGER, 
+                "Expected integer")).Value);
             }
-            return new ConstantIdent(((IdentToken)Consume(DomainTag.IDENT, "Expected identifier")).Name);
+            return new ConstantIdent(((IdentToken)Consume(DomainTag.IDENT, 
+            "Expected identifier")).Name);
         }
 
         private bool Check(DomainTag type) => currentToken.Tag == type;
@@ -1191,7 +1260,8 @@ namespace lab2._3.src.Tokens
     internal class EOFToken : Token
     {
 
-        public EOFToken(Position statring, Position following) : base(DomainTag.EOF, statring, following)
+        public EOFToken(Position statring, Position following)
+         : base(DomainTag.EOF, statring, following)
         {
         }
         public override string ToString()
@@ -1219,7 +1289,8 @@ namespace lab2._4.src.Tokens
     internal class IdentToken : Token
     {
         public string Name;
-        public IdentToken(string name, Position statring, Position following) : base(DomainTag.IDENT, statring, following)
+        public IdentToken(string name, Position statring, Position following) 
+        : base(DomainTag.IDENT, statring, following)
         {
             Name = name;
         }
@@ -1248,7 +1319,8 @@ namespace lab2._4.src.Tokens
 {
     internal class InvalidToken : Token
     {
-        public InvalidToken(Position statring, Position following) : base(DomainTag.INVALID, statring, following)
+        public InvalidToken(Position statring, Position following) 
+        : base(DomainTag.INVALID, statring, following)
         {
         }
         public override string ToString()
@@ -1275,7 +1347,8 @@ namespace lab2._3.src.Tokens
     internal class KeyWordToken : Token
     {
 
-        public KeyWordToken(DomainTag tag, Position starting, Position following) : base(tag, starting, following)
+        public KeyWordToken(DomainTag tag, Position starting, Position following) 
+        : base(tag, starting, following)
         {
             Debug.Assert(tag == DomainTag.KW_ARRAY ||
                          tag == DomainTag.KW_TYPE ||
@@ -1315,7 +1388,8 @@ namespace lab2._4.src.Tokens
     {
         public readonly double Value;
 
-        public NumberToken(DomainTag tag, double value, Position starting, Position following) : base(tag, starting, following)
+        public NumberToken(DomainTag tag, double value, Position starting, Position following) 
+        : base(tag, starting, following)
         {
             Debug.Assert(tag == DomainTag.REAL || tag == DomainTag.INTEGER);
 
@@ -1345,7 +1419,8 @@ namespace lab2._3.src.Tokens
     internal class SpecialToken : Token
     {
 
-        public SpecialToken(DomainTag tag, Position starting, Position following) : base(tag, starting, following)
+        public SpecialToken(DomainTag tag, Position starting, Position following) 
+        : base(tag, starting, following)
         {
             Debug.Assert(tag == DomainTag.SC ||
                 tag == DomainTag.COLON || 
